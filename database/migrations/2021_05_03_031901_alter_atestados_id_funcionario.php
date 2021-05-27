@@ -14,7 +14,7 @@ class AlterAtestadosIdFuncionario extends Migration
     public function up()
     {
         Schema::table('atestados', function (Blueprint $table) {
-            $table->foreign('id_funcionarios')->references('id_funcionarios')->on('funcionarios');
+            $table->foreign('id_funcionario')->references('id_funcionario')->on('funcionarios');
         });
     }
 
@@ -26,7 +26,7 @@ class AlterAtestadosIdFuncionario extends Migration
     public function down()
     {
         Schema::table('atestados', function (Blueprint $table) {
-            $table->dropForeign(['id_funcionarios']);
+            $table->dropForeign(['id_funcionario']);
         });
     }
 }

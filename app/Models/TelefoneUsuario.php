@@ -8,4 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class TelefoneUsuario extends Model
 {
     use HasFactory;
+
+    protected $primaryKey = 'id_telefone_usuarios';
+
+    protected $fillable = [
+        'id_usuario',
+        'telefone'
+    ];
 }
+

@@ -16,8 +16,8 @@ class CreateRelacaoUsuarioEmpresasTable extends Migration
         Schema::create('relacao_usuario_empresas', function (Blueprint $table) {
             $table->id('id_relacao_usuario_empresas');
 
-            $table->integer('id_empresa');
-            $table->integer('id_usuario');
+            $table->unsignedInteger('id_usuario');
+            $table->unsignedInteger('id_empresa');
 
             $table->timestamps();
         });

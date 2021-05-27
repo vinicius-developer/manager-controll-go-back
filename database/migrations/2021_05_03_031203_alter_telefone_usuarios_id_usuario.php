@@ -13,7 +13,7 @@ class AlterTelefoneUsuariosIdUsuario extends Migration
      */
     public function up()
     {
-        Schema::table('telefones_usuarios', function (Blueprint $table) {
+        Schema::table('telefone_usuarios', function (Blueprint $table) {
             $table->foreign('id_usuario')->references('id_usuario')->on('usuarios');
         });
     }
@@ -25,8 +25,8 @@ class AlterTelefoneUsuariosIdUsuario extends Migration
      */
     public function down()
     {
-        Schema::table('telefones_usuarios', function (Blueprint $table) {
-            $table->foreign(['id_usuario']);
+        Schema::table('telefone_usuarios', function (Blueprint $table) {
+            $table->dropForeign(['id_usuario']);
         });
     }
 }

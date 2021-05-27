@@ -17,7 +17,7 @@ class CreateAtestadosTable extends Migration
             $table->id('id_atestado');
 
             $table->char('crm_medico', 13);
-            $table->integer('id_funcionario');
+            $table->unsignedInteger('id_funcionario');
             $table->timestamp('data_lancamento');
             $table->timestamp('termino_de_descanco');
 

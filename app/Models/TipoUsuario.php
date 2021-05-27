@@ -8,4 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class TipoUsuario extends Model
 {
     use HasFactory;
+
+    protected $primaryKey = 'id_tipo_usuario';
+
+    protected $fillable = [
+        'nome'
+    ];
 }

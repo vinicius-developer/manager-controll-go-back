@@ -17,8 +17,8 @@ class CreateFuncionariosTable extends Migration
             $table->increments('id_funcionario');
 
             $table->string('nome', 100);
-            $table->integer('id_empresa');
-            $table->integer('id_usuario');
+            $table->unsignedInteger('id_empresa');
+            $table->unsignedInteger('id_usuario');
 
             $table->timestamps();
         });

@@ -16,7 +16,7 @@ class CreateCnaeEmpresasTable extends Migration
         Schema::create('cnae_empresas', function (Blueprint $table) {
             $table->id('id_cnae_empresa');
 
-            $table->integer('id_empresa');
+            $table->unsignedInteger('id_empresa');
             $table->char('codigo_cnae', 7);
 
             $table->timestamps();

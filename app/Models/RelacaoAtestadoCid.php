@@ -8,4 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class RelacaoAtestadoCid extends Model
 {
     use HasFactory;
+
+    protected $primaryKey = 'id_relacao_atestado_cid';
+
+    protected $fillable = [
+        'codigo_cid',
+        'id_atestado',
+    ];
 }
+

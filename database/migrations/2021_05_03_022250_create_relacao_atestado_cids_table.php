@@ -17,7 +17,7 @@ class CreateRelacaoAtestadoCidsTable extends Migration
             $table->id('id_relacao_atestado_cids');
 
             $table->string('codigo_cid', 5);
-            $table->integer('id_atestado');
+            $table->unsignedBigInteger('id_atestado');
 
             $table->timestamps();
         });
