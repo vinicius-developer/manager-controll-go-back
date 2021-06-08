@@ -1,14 +1,15 @@
 <?php
 
-
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Usuario\AuthenticateUsuarioRequest;
 use App\Http\Requests\Usuario\CreateUsuarioRequest;
-use App\Traits\ResponsaMessage;
+use App\Models\RelacaoUsuarioEmpresa;
+use App\Models\TelefoneUsuario;
+use App\Models\Usuario;
 use App\Traits\Authenticate;
 use App\Traits\FormatData;
-use App\Models\Usuario;
+use App\Traits\ResponsaMessage;
 use Exception;
 
 class UsuarioController extends Controller
@@ -18,21 +19,84 @@ class UsuarioController extends Controller
     private $usuario;
 
     private $formatInsertUser = [
-        'tipo_usuario' => 'id_tipo_usuario'
+        'tipo_usuario' => 'id_tipo_usuario',
     ];
 
     public function __construct()
     {
         $this->usuario = new Usuario();
+        $this->telefone = new TelefoneUsuario();
+        $this->usuarioEmpresa = new RelacaoUsuarioEmpresa();
     }
+
+    // Cria usuario
 
     public function store(CreateUsuarioRequest $request)
     {
+
+        // Recupera e decodifica o token
+
+        $token = $request->bearerToken();
+        $decoded = $this->checkToken($token)->sub;
+        $tokenTipoUser = $this->usuario::where('id_usuario', $decoded)->value('id_tipo_usuario');
+
         $data = $this->checkSintaxeWithReference($request->all(), $this->formatInsertUser);
+
+        
+        // Caso o tipo do usuario for 2 é a empresa do token e inserida no request para cadastro
+        
+        if ($tokenTipoUser == 2) {
+            
+            $tokenEmpre = $this->usuarioEmpresa::where('id_usuario', $decoded)->value('id_empresa');
+            $data['empresa'] = $tokenEmpre;
+            
+        }
+
+        $data['password'] = $this->generatePassword($data['password']);
+        $Reqtels = array_unique(explode(', ', $data['telefone_usuario']));
+
+        // Checa se algum dos telefones já foram cadastrados
+
+        $cadTels = $this->telefone::get('telefone');
+
+        foreach ($cadTels as $cadTel) {
+
+            foreach ($Reqtels as $tel) {
+
+                if ($tel === $cadTel['telefone']) {
+
+                    return $this->formateMessageError("Numero " . $cadTel["telefone"] . " já cadastrado no banco de dados", 500);
+
+                }
+
+            }
+
+        }
+
+        // Insere as informações nas tabelas de usuarios, telefones e relação_usuario_empresa
 
         try {
 
             $this->usuario->create($data);
+
+            $idUser = $this->usuario::where('email', $data['email'])->value('id_usuario');
+
+            $userEmpreData = array(
+                'id_empresa' => $data['empresa'],
+                'id_usuario' => $idUser,
+            );
+
+            $this->usuarioEmpresa->create($userEmpreData);
+
+            foreach ($Reqtels as $value) {
+
+                $telData = array(
+                    'id_usuario' => $idUser,
+                    'telefone' => $value,
+                );
+
+                $this->telefone->create($telData);
+            }
 
         } catch (Exception $e) {
 
@@ -41,7 +105,10 @@ class UsuarioController extends Controller
         }
 
         return $this->formateMessageSuccess("Usuário cadastrado com sucesso");
+
     }
+
+    // Sistema de Login
 
     public function authenticate(AuthenticateUsuarioRequest $request)
     {
@@ -49,7 +116,7 @@ class UsuarioController extends Controller
 
         $usersExists = $this->checkUsersExists($request->password, $data);
 
-        if($usersExists) {
+        if ($usersExists) {
 
             $id = $data->first()->id_usuario;
 
@@ -68,13 +135,13 @@ class UsuarioController extends Controller
             'message' => [
                 'token' => $token,
                 'exp' => '5 horas',
-            ]
+            ],
         ]);
     }
 
     private function checkUsersExists($password, $data)
     {
-        if($data->exists()) {
+        if ($data->exists()) {
 
             $user = $data->first();
 
@@ -86,6 +153,5 @@ class UsuarioController extends Controller
 
         }
     }
-
 
 }

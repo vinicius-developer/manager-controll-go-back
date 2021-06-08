@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Traits\Authenticate;
+use App\Http\Requests\Empresa\CreateEmpresaRequest;
 use App\Models\Empresa;
-use Illuminate\Http\Request;
+use App\Traits\Authenticate;
+use App\Traits\FormatData;
+use App\Traits\ResponsaMessage;
+use Exception;
 
 class EmpresaController extends Controller
 {
-    use Authenticate;
+    use Authenticate, FormatData, ResponsaMessage;
 
     private $empresa;
 
@@ -17,12 +20,21 @@ class EmpresaController extends Controller
         $this->empresa = new Empresa();
     }
 
-    public function create_empresa()
+    private $formatInsertEmpre = [
+
+        'cnae' => 'cnae_empresa',
+
+    ];
+
+    public function create_empresa(CreateEmpresaRequest $request)
     {
-        $token = $this->generateToken(1, env( 'API_FRONT_MCG', 'http://127.0.0.1'));
+        // $token = $this->generateToken(1, env( 'API_FRONT_MCG', 'http://127.0.0.1'));
 
+        // $data = $this->checkSintaxeWithReference($request->all(), $this->formatInsertEmpre);
 
+        // return '$data';
 
+        return 'Ola';
 
     }
 }

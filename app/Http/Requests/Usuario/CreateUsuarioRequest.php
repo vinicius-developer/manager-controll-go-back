@@ -28,8 +28,8 @@ class CreateUsuarioRequest extends FormRequest
             'tipo_usuario' => ['required', 'exists:tipo_usuarios,id_tipo_usuario'],
             'email' => ['required', 'email:rfc,dns'],
             'password' => ['required', 'confirmed'],
-            'empresa' => ['required_if:tipo_usuario,==,2', 'exists:empresas,id'],
-            'telefones_usuarios.*' => ['required', 'regex:/(\(?\d{2}\)?\s)?(\d{4,5}\-\d{4})/']
+            'empresa' => ['required_if:tipo_usuario,==,1', 'exists:empresas,id_empresa'],
+            'telefones_usuarios.*' => ['required', 'regex:/(\(?\d{2})\)?(\(?\d{2}\)?\s)?(\d{4,5}\-\d{4})/']
         ];
     }
 

@@ -40,7 +40,7 @@ trait Authenticate
      */
     public function generateToken(int $id, string $aud):string
     {
-        $assign = env('JWT_ASSING', 'assinatura');
+        $assign = config('jwtAssing.assing');
 
         $now = time();
 
@@ -63,6 +63,6 @@ trait Authenticate
      */
     public function checkToken(string $token)
     {
-        FirebaseJWT::decode($token, env('JWT_ASSING', 'assinatura',), ['HS256']);
+        return FirebaseJWT::decode($token, config('jwtAssing.assing'), array('HS256'));
     }
 }

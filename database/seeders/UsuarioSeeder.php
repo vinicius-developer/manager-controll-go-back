@@ -18,7 +18,7 @@ class UsuarioSeeder extends Seeder
             'nome' => 'Admin',
             'id_tipo_usuario' => 1,
             'email' => 'Admin@admin.com',
-            'password' => '$2y$12$w/xG64j74gVkAbEAEGnKwO/MEcfhAJkHsdWC0U2CuUOPfqVSRyWQG'
+            'password' => 'Aa@123456'
         ]);
     }
 }

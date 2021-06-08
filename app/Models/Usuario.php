@@ -15,7 +15,7 @@ class Usuario extends Model
         'nome',
         'id_tipo_usuario',
         'email',
-        'senha',
+        'password',
     ];
 
     public function getUserWithEmail($email)
