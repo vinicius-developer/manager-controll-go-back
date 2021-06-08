@@ -17,6 +17,8 @@ class UsuarioController extends Controller
     use Authenticate, FormatData, ResponsaMessage;
 
     private $usuario;
+    private $telefone;
+    private $usuarioEmpresa;
 
     private $formatInsertUser = [
         'tipo_usuario' => 'id_tipo_usuario',
@@ -53,7 +55,7 @@ class UsuarioController extends Controller
         }
 
         $data['password'] = $this->generatePassword($data['password']);
-        $Reqtels = array_unique(explode(', ', $data['telefone_usuario']));
+        $reqTels = array_unique(explode(', ', $data['telefone_usuario']));
 
         // Checa se algum dos telefones já foram cadastrados
 
@@ -61,7 +63,7 @@ class UsuarioController extends Controller
 
         foreach ($cadTels as $cadTel) {
 
-            foreach ($Reqtels as $tel) {
+            foreach ($reqTels as $tel) {
 
                 if ($tel === $cadTel['telefone']) {
 
@@ -88,7 +90,7 @@ class UsuarioController extends Controller
 
             $this->usuarioEmpresa->create($userEmpreData);
 
-            foreach ($Reqtels as $value) {
+            foreach ($reqTels as $value) {
 
                 $telData = array(
                     'id_usuario' => $idUser,
