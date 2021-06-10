@@ -21,6 +21,7 @@ class CreateEmpresasTable extends Migration
             $table->string('razao_social', 200);
 
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

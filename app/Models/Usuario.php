@@ -20,14 +20,19 @@ class Usuario extends Model
 
     public function getUserWithEmail($email)
     {
-        return $this->where('email', $email);
+        return $this->where('email', $email)->get();
+    }
+
+    public function getUserWithId($id)
+    {
+        return $this->where('id_usuario', $id)->get();
     }
 
     public function isAdmin($id)
     {
         return $this->where('id_usuario', $id)
             ->where('id_tipo_usuario', 1)
-            ->fisrt();
+            ->first();
     }
 
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Usuario\AuthenticateUsuarioRequest;
 use App\Http\Requests\Usuario\CreateUsuarioRequest;
+use App\Models\Empresa;
 use App\Models\RelacaoUsuarioEmpresa;
 use App\Models\TelefoneUsuario;
 use App\Models\Usuario;
@@ -19,6 +20,7 @@ class UsuarioController extends Controller
     private $usuario;
     private $telefone;
     private $usuarioEmpresa;
+    private $empresa;
 
     private $formatInsertUser = [
         'tipo_usuario' => 'id_tipo_usuario',
@@ -29,6 +31,7 @@ class UsuarioController extends Controller
         $this->usuario = new Usuario();
         $this->telefone = new TelefoneUsuario();
         $this->usuarioEmpresa = new RelacaoUsuarioEmpresa();
+        $this->empresa = new Empresa();
     }
 
     // Cria usuario
@@ -40,25 +43,47 @@ class UsuarioController extends Controller
 
         $token = $request->bearerToken();
         $decoded = $this->checkToken($token)->sub;
-        $tokenTipoUser = $this->usuario::where('id_usuario', $decoded)->value('id_tipo_usuario');
+        $tokenTipoUser = $this->usuario->getUserWithId($decoded)->first()->id_tipo_usuario;
 
         $data = $this->checkSintaxeWithReference($request->all(), $this->formatInsertUser);
 
+        // Caso o tipo do usuario for 2 a empresa do token e inserida no request para cadastro e também e bloqueada a criação de um usuario admin
         
-        // Caso o tipo do usuario for 2 é a empresa do token e inserida no request para cadastro
-        
-        if ($tokenTipoUser == 2) {
-            
+        if ($tokenTipoUser == 1) {
+
+            if (!isset($data['empresa']) && $data['id_tipo_usuario'] == 2) {
+
+                return $this->formateMessageError("Informe a empresa do usuario que deseja cadastrar", 500);
+
+            }
+
+        } else {
+
+            if($data['id_tipo_usuario'] == 1){
+
+                return $this->formateMessageError("Você não tem permissão para cadastrar um usuario admin", 500);
+
+            }
+
             $tokenEmpre = $this->usuarioEmpresa::where('id_usuario', $decoded)->value('id_empresa');
             $data['empresa'] = $tokenEmpre;
-            
+
         }
 
-        $data['password'] = $this->generatePassword($data['password']);
-        $reqTels = array_unique(explode(', ', $data['telefone_usuario']));
+        // Checa se a empresa está ativa para cadastro
+
+        $empreSituation = isset($data['empresa']) ? $this->empresa->checkEmpreIsActive($data['empresa']) : 1;
+
+        if ($empreSituation == 0) {
+
+            return $this->formateMessageError("Não será possivel efetuar o cadastro, empresa inativa", 500);
+
+        }
+
 
         // Checa se algum dos telefones já foram cadastrados
 
+        $reqTels = array_unique(explode(', ', $data['telefone_usuario']));
         $cadTels = $this->telefone::get('telefone');
 
         foreach ($cadTels as $cadTel) {
@@ -76,6 +101,8 @@ class UsuarioController extends Controller
         }
 
         // Insere as informações nas tabelas de usuarios, telefones e relação_usuario_empresa
+
+        $data['password'] = $this->generatePassword($data['password']);
 
         try {
 
@@ -116,6 +143,21 @@ class UsuarioController extends Controller
     {
         $data = $this->usuario->getUserWithEmail($request->email);
 
+        // Verifica se a empresa esta ativa para realizar o login
+
+        if ($data->first()->id_tipo_usuario == 2) {
+
+            $userEmpre = $this->usuarioEmpresa->getUserEmpre($data->first()->id_usuario);
+            $empreSituation = $this->empresa->checkEmpreIsActive($userEmpre);
+
+            if ($empreSituation == 0) {
+
+                return $this->formateMessageError("Não será possivel efetuar o login, empresa inativa", 500);
+
+            }
+
+        }
+
         $usersExists = $this->checkUsersExists($request->password, $data);
 
         if ($usersExists) {
@@ -143,17 +185,10 @@ class UsuarioController extends Controller
 
     private function checkUsersExists($password, $data)
     {
-        if ($data->exists()) {
 
-            $user = $data->first();
+        $user = $data->first();
+        return $this->checkPassword($password, $user->password);
 
-            return $this->checkPassword($password, $user->password);
-
-        } else {
-
-            return false;
-
-        }
     }
 
 }

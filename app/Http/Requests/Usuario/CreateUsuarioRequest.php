@@ -28,7 +28,7 @@ class CreateUsuarioRequest extends FormRequest
             'tipo_usuario' => ['required', 'exists:tipo_usuarios,id_tipo_usuario'],
             'email' => ['required', 'email:rfc,dns'],
             'password' => ['required', 'confirmed'],
-            'empresa' => ['required_if:tipo_usuario,==,1', 'exists:empresas,id_empresa'],
+            'empresa' => ['prohibited_if:tipo_usuario,==,1', 'exists:empresas,id_empresa'],
             'telefones_usuarios.*' => ['required', 'regex:/(\(?\d{2})\)?(\(?\d{2}\)?\s)?(\d{4,5}\-\d{4})/']
         ];
     }
@@ -44,8 +44,8 @@ class CreateUsuarioRequest extends FormRequest
             'email.email' => 'E-mail não contem formato valido',
             'password.required' => 'É necessário informar uma senha',
             'password.confirmed' => 'As senha não são iguais',
-            'empresa.required_if' => 'É necessário informar a empresa',
-            'empresa.exists' => 'Essa empresa não está cadastrado em nosso sistema',
+            'empresa.prohibited_if' => 'Não e possível vincular uma empresa a um usuário admin',
+            'empresa.exists' => 'Essa empresa não está cadastrada em nosso sistema',
             'telefones_usuarios.*.required' => 'É necessário informar o telefone',
             'telefones_usuarios.*.regex' => 'Telefone não possui formato válido'
         ];

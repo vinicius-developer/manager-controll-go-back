@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Empresa\CreateEmpresaRequest;
+use App\Http\Requests\Empresa\DisableEmpresaRequest;
 use App\Models\CnaeEmpresa;
 use App\Models\Empresa;
 use App\Models\Usuario;
@@ -41,7 +42,7 @@ class EmpresaController extends Controller
         $decoded = $this->checkToken($token)->sub;
         $tokenTipoUser = $this->usuario::where('id_usuario', $decoded)->value('id_tipo_usuario');
 
-        if($tokenTipoUser != '1'){
+        if ($tokenTipoUser != '1') {
 
             return $this->formateMessageError('O usuario não tem autorização para o cadastro de empresas', 401);
 
@@ -75,6 +76,35 @@ class EmpresaController extends Controller
         }
 
         return $this->formateMessageSuccess("Empresa cadastrada com sucesso");
+
+    }
+
+    public function disable_empresa(DisableEmpresaRequest $request)
+    {
+
+        $token = $request->bearerToken();
+        $decoded = $this->checkToken($token)->sub;
+        $tokenTipoUser = $this->usuario::where('id_usuario', $decoded)->value('id_tipo_usuario');
+
+        if ($tokenTipoUser != '1') {
+
+            return $this->formateMessageError('O usuario não tem autorização para desativar um empresa', 401);
+
+        }
+
+        $data = $this->checkSintaxeWithReference($request->all(), $this->formatInsertEmpre);
+
+        try {
+
+            $this->empresa::where('cnpj', $data['cnpj'])->delete();
+
+        } catch (Exception $e) {
+
+            return $this->formateMessageError("Não foi possivel fazer a exclusão do banco de dados", 500);
+
+        }
+
+        return $this->formateMessageSuccess("Empresa desativada com sucesso");
 
     }
 }

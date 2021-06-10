@@ -29,6 +29,7 @@ Route::middleware(['checktoken'])->group(function () {
     Route::prefix('empresa')->group(function () {
 
         Route::post('create', [EmpresaController::class, 'create_empresa']);
+        Route::post('delete', [EmpresaController::class, 'disable_empresa']);
 
     });
 
