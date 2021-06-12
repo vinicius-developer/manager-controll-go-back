@@ -4,7 +4,7 @@ namespace App\Http\Requests\Usuario;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateUsuarioRequest extends FormRequest
+class CreateUsuarioAdminRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -27,8 +27,7 @@ class CreateUsuarioRequest extends FormRequest
             'nome' => ['required', 'max:100'],
             'email' => ['required', 'email:rfc,dns'],
             'password' => ['required', 'confirmed'],
-            'empresa' => ['exists:empresas,id_empresa'],
-            'telefones_usuarios.*' => ['required', 'regex:/(\(?\d{2})\)?(\(?\d{2}\)?\s)?(\d{4,5}\-\d{4})/']
+            'telefones_usuarios.*' => ['required', 'regex:/(\(?\d{2})\)?(\(?\d{2}\)?\s)?(\d{4,5}\-\d{4})/'],
         ];
     }
 
@@ -37,12 +36,12 @@ class CreateUsuarioRequest extends FormRequest
         return [
             'nome.required' => 'É necessário informar o campo nome',
             'nome.max' => 'Este nome é muito longo',
+            'email.required' => 'É necessário informar o e-mail',
             'email.email' => 'E-mail não contem formato valido',
             'password.required' => 'É necessário informar uma senha',
             'password.confirmed' => 'As senha não são iguais',
-            'empresa.exists' => 'Essa empresa não está cadastrada em nosso sistema',
             'telefones_usuarios.*.required' => 'É necessário informar o telefone',
-            'telefones_usuarios.*.regex' => 'Telefone não possui formato válido'
+            'telefones_usuarios.*.regex' => 'Telefone não possui formato válido',
         ];
     }
 }

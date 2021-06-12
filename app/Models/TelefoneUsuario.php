@@ -15,5 +15,11 @@ class TelefoneUsuario extends Model
         'id_usuario',
         'telefone'
     ];
+
+    public function getAllTel(){
+
+        return $this->get('telefone');
+
+    }
 }
 

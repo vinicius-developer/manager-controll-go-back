@@ -24,4 +24,9 @@ class Empresa extends Model
         return $this::where('id_empresa', $id)->count();
 
     }
+
+    public function getEmpreWithCnpj($cnpj)
+    {
+        return $this->where('cnpj', $cnpj)->first();
+    }
 }

@@ -34,21 +34,14 @@ class EmpresaController extends Controller
 
     public function create_empresa(CreateEmpresaRequest $request)
     {
-        // $token = $this->generateToken(1, env( 'API_FRONT_MCG', 'http://127.0.0.1'));
+        
+        $tokenUser = $this->decodeToken($request);
 
-        // Decodifica o token e identifica o tipo do usuario
+        if ($tokenUser->id_tipo_user != '1') {
 
-        $token = $request->bearerToken();
-        $decoded = $this->checkToken($token)->sub;
-        $tokenTipoUser = $this->usuario::where('id_usuario', $decoded)->value('id_tipo_usuario');
-
-        if ($tokenTipoUser != '1') {
-
-            return $this->formateMessageError('O usuario não tem autorização para o cadastro de empresas', 401);
+            return $this->formateMessageError('O usuario não tem autorização para cadastrar empresas', 401);
 
         }
-
-        // Formata e insere as informações do request em um banco de dados
 
         $data = $this->checkSintaxeWithReference($request->all(), $this->formatInsertEmpre);
 
@@ -82,13 +75,11 @@ class EmpresaController extends Controller
     public function disable_empresa(DisableEmpresaRequest $request)
     {
 
-        $token = $request->bearerToken();
-        $decoded = $this->checkToken($token)->sub;
-        $tokenTipoUser = $this->usuario::where('id_usuario', $decoded)->value('id_tipo_usuario');
+        $tokenUser = $this->decodeToken($request);
 
-        if ($tokenTipoUser != '1') {
+        if ($tokenUser->id_tipo_user != '1') {
 
-            return $this->formateMessageError('O usuario não tem autorização para desativar um empresa', 401);
+            return $this->formateMessageError('O usuario não tem autorização para desativar uma empresa', 401);
 
         }
 
@@ -96,7 +87,7 @@ class EmpresaController extends Controller
 
         try {
 
-            $this->empresa::where('cnpj', $data['cnpj'])->delete();
+            $this->empresa->getEmpreWithCnpj($data['cnpj'])->delete();
 
         } catch (Exception $e) {
 
@@ -105,6 +96,17 @@ class EmpresaController extends Controller
         }
 
         return $this->formateMessageSuccess("Empresa desativada com sucesso");
+
+    }
+
+    // Decodifica o token e identifica o usuario
+
+    private function decodeToken(object $request)
+    {
+
+        $reqToken = $request->bearerToken();
+        $decoded = $this->checkToken($reqToken)->sub;
+        return $this->usuario->getUserWithId($decoded)->first();
 
     }
 }

@@ -22,7 +22,8 @@ Route::middleware(['checktoken'])->group(function () {
 
     Route::prefix('usuario')->group(function () {
 
-        Route::post('create', [UsuarioController::class, 'store']);
+        Route::post('create', [UsuarioController::class, 'storeUser']);
+        Route::post('createAdmin', [UsuarioController::class, 'storeUserAdmin']);
 
     });
 

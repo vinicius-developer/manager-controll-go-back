@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Usuario\AuthenticateUsuarioRequest;
+use App\Http\Requests\Usuario\CreateUsuarioAdminRequest;
 use App\Http\Requests\Usuario\CreateUsuarioRequest;
 use App\Models\Empresa;
 use App\Models\RelacaoUsuarioEmpresa;
@@ -36,22 +37,15 @@ class UsuarioController extends Controller
 
     // Cria usuario
 
-    public function store(CreateUsuarioRequest $request)
+    public function storeUser(CreateUsuarioRequest $request)
     {
 
-        // Recupera e decodifica o token
-
-        $token = $request->bearerToken();
-        $decoded = $this->checkToken($token)->sub;
-        $tokenTipoUser = $this->usuario->getUserWithId($decoded)->first()->id_tipo_usuario;
-
+        $userToken = $this->decodeToken($request);
         $data = $this->checkSintaxeWithReference($request->all(), $this->formatInsertUser);
 
-        // Caso o tipo do usuario for 2 a empresa do token e inserida no request para cadastro e também e bloqueada a criação de um usuario admin
-        
-        if ($tokenTipoUser == 1) {
+        if ($userToken->id_tipo_usuario == 1) {
 
-            if (!isset($data['empresa']) && $data['id_tipo_usuario'] == 2) {
+            if (!isset($data['empresa'])) {
 
                 return $this->formateMessageError("Informe a empresa do usuario que deseja cadastrar", 500);
 
@@ -59,18 +53,9 @@ class UsuarioController extends Controller
 
         } else {
 
-            if($data['id_tipo_usuario'] == 1){
-
-                return $this->formateMessageError("Você não tem permissão para cadastrar um usuario admin", 500);
-
-            }
-
-            $tokenEmpre = $this->usuarioEmpresa::where('id_usuario', $decoded)->value('id_empresa');
-            $data['empresa'] = $tokenEmpre;
+            $data['empresa'] = $this->usuarioEmpresa->getUserEmpre($userToken->id_usuario);
 
         }
-
-        // Checa se a empresa está ativa para cadastro
 
         $empreSituation = isset($data['empresa']) ? $this->empresa->checkEmpreIsActive($data['empresa']) : 1;
 
@@ -80,49 +65,89 @@ class UsuarioController extends Controller
 
         }
 
+        $telRep = $this->checkTelReq($data['telefone_usuario']);
 
-        // Checa se algum dos telefones já foram cadastrados
+        if ($telRep == 1) {
 
-        $reqTels = array_unique(explode(', ', $data['telefone_usuario']));
-        $cadTels = $this->telefone::get('telefone');
-
-        foreach ($cadTels as $cadTel) {
-
-            foreach ($reqTels as $tel) {
-
-                if ($tel === $cadTel['telefone']) {
-
-                    return $this->formateMessageError("Numero " . $cadTel["telefone"] . " já cadastrado no banco de dados", 500);
-
-                }
-
-            }
+            return $this->formateMessageError("Telefone já cadastrado no banco de dados", 500);
 
         }
 
-        // Insere as informações nas tabelas de usuarios, telefones e relação_usuario_empresa
-
         $data['password'] = $this->generatePassword($data['password']);
+        $data['id_tipo_usuario'] = 2;
 
         try {
 
             $this->usuario->create($data);
 
-            $idUser = $this->usuario::where('email', $data['email'])->value('id_usuario');
+            $idUser = $this->usuario->getUserWithEmail($data['email'])->id_usuario;
+            $reqTels = array_unique(explode(', ', $data['telefone_usuario']));
 
-            $userEmpreData = array(
+            $userEmpreData = [
                 'id_empresa' => $data['empresa'],
                 'id_usuario' => $idUser,
-            );
+            ];
 
             $this->usuarioEmpresa->create($userEmpreData);
 
             foreach ($reqTels as $value) {
 
-                $telData = array(
+                $telData = [
                     'id_usuario' => $idUser,
                     'telefone' => $value,
-                );
+                ];
+
+                $this->telefone->create($telData);
+            }
+
+        } catch (Exception $e) {
+
+            return $this->formateMessageError("Não foi possível fazer a inserção de dados", 500);
+
+        }
+
+        return $this->formateMessageSuccess("Usuário cadastrado com sucesso");
+
+    }
+
+    // Cadastra usuarios admins
+
+    public function StoreUserAdmin(CreateUsuarioAdminRequest $request)
+    {
+
+        $userToken = $this->decodeToken($request);
+        $data = $this->checkSintaxeWithReference($request->all(), $this->formatInsertUser);
+
+        if ($userToken->id_tipo_usuario != 1) {
+
+            return $this->formateMessageError("O usuario não tem autorização para cadastrar administradores", 500);
+
+        }
+
+        $telRep = $this->checkTelReq($data['telefone_usuario']);
+
+        if ($telRep == 1) {
+
+            return $this->formateMessageError("Telefone já cadastrado no banco de dados", 500);
+
+        }
+
+        $data['password'] = $this->generatePassword($data['password']);
+        $data['id_tipo_usuario'] = 1;
+
+        try {
+
+            $this->usuario->create($data);
+
+            $idUser = $this->usuario->getUserWithEmail($data['email'])->id_usuario;
+            $reqTels = array_unique(explode(', ', $data['telefone_usuario']));
+
+            foreach ($reqTels as $value) {
+
+                $telData = [
+                    'id_usuario' => $idUser,
+                    'telefone' => $value,
+                ];
 
                 $this->telefone->create($telData);
             }
@@ -142,12 +167,11 @@ class UsuarioController extends Controller
     public function authenticate(AuthenticateUsuarioRequest $request)
     {
         $data = $this->usuario->getUserWithEmail($request->email);
+        $usersExists = $this->checkUsersExists($request->password, $data);
 
-        // Verifica se a empresa esta ativa para realizar o login
+        if ($data->id_tipo_usuario == 2) {
 
-        if ($data->first()->id_tipo_usuario == 2) {
-
-            $userEmpre = $this->usuarioEmpresa->getUserEmpre($data->first()->id_usuario);
+            $userEmpre = $this->usuarioEmpresa->getUserEmpre($data->id_usuario);
             $empreSituation = $this->empresa->checkEmpreIsActive($userEmpre);
 
             if ($empreSituation == 0) {
@@ -158,11 +182,9 @@ class UsuarioController extends Controller
 
         }
 
-        $usersExists = $this->checkUsersExists($request->password, $data);
-
         if ($usersExists) {
 
-            $id = $data->first()->id_usuario;
+            $id = $data->id_usuario;
 
             $aud = $request->url();
 
@@ -183,11 +205,49 @@ class UsuarioController extends Controller
         ]);
     }
 
+    private function decodeToken(object $request)
+    {
+
+        $reqToken = $request->bearerToken();
+        $decoded = $this->checkToken($reqToken)->sub;
+        return $this->usuario->getUserWithId($decoded)->first();
+
+    }
+
+    private function checkTelReq($data)
+    {
+
+        $reqTels = array_unique(explode(', ', $data));
+        $cadTels = $this->telefone->getAllTel();
+
+        foreach ($cadTels as $cadTel) {
+
+            foreach ($reqTels as $tel) {
+
+                if ($tel === $cadTel['telefone']) {
+
+                    return true;
+
+                }
+
+            }
+
+        }
+
+    }
+
     private function checkUsersExists($password, $data)
     {
 
-        $user = $data->first();
-        return $this->checkPassword($password, $user->password);
+        if ($data->exists()) {
+
+            return $this->checkPassword($password, $data->password);
+
+        } else {
+
+            return false;
+
+        }
 
     }
 

@@ -20,7 +20,7 @@ class Usuario extends Model
 
     public function getUserWithEmail($email)
     {
-        return $this->where('email', $email)->get();
+        return $this->where('email', $email)->first();
     }
 
     public function getUserWithId($id)
