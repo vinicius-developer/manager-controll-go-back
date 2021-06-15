@@ -25,7 +25,7 @@ class Usuario extends Model
 
     public function getUserWithId($id)
     {
-        return $this->where('id_usuario', $id)->get();
+        return $this->where('id_usuario', $id)->first();
     }
 
     public function isAdmin($id)

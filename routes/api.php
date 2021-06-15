@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\FuncionarioController;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 
@@ -24,13 +25,22 @@ Route::middleware(['checktoken'])->group(function () {
 
         Route::post('create', [UsuarioController::class, 'storeUser']);
         Route::post('createAdmin', [UsuarioController::class, 'storeUserAdmin']);
+        Route::get('list', [UsuarioController::class, 'listUser']);
 
     });
 
     Route::prefix('empresa')->group(function () {
 
-        Route::post('create', [EmpresaController::class, 'create_empresa']);
-        Route::post('delete', [EmpresaController::class, 'disable_empresa']);
+        Route::post('create', [EmpresaController::class, 'createEmpresa']);
+        Route::post('delete', [EmpresaController::class, 'disableEmpresa']);
+
+    });
+
+    Route::prefix('funcionario')->group(function(){
+
+        Route::post('create', [FuncionarioController::class, 'createFuncionario']);
+        Route::post('delete', [FuncionarioController::class, 'deleteFuncionario']);
+
 
     });
 

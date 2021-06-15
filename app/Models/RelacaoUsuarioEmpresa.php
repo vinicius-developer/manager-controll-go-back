@@ -17,6 +17,14 @@ class RelacaoUsuarioEmpresa extends Model
     ];
 
     public function getUserEmpre($id){
-       return $this::where('id_usuario', $id)->value('id_empresa');
+       return $this->where('id_usuario', $id)->value('id_empresa');
+    }
+
+    public function consultUser($id){
+        return $this->where('id_empresa', $id)->get('id_usuario');
+    }
+
+    public function getReUserEmpre($idUser){
+        return $this->where('id_usuario', $idUser)->get();
     }
 }

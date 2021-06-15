@@ -21,6 +21,7 @@ class CreateFuncionariosTable extends Migration
             $table->unsignedInteger('id_usuario');
 
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

@@ -18,6 +18,7 @@ class EmpresaController extends Controller
 
     private $empresa;
     private $cnaeEmpresa;
+    private $usuario;
 
     public function __construct()
     {
@@ -32,12 +33,12 @@ class EmpresaController extends Controller
 
     ];
 
-    public function create_empresa(CreateEmpresaRequest $request)
+    public function createEmpresa(CreateEmpresaRequest $request)
     {
         
         $tokenUser = $this->decodeToken($request);
 
-        if ($tokenUser->id_tipo_user != '1') {
+        if ($tokenUser->id_tipo_user == '2') {
 
             return $this->formateMessageError('O usuario não tem autorização para cadastrar empresas', 401);
 
@@ -72,12 +73,12 @@ class EmpresaController extends Controller
 
     }
 
-    public function disable_empresa(DisableEmpresaRequest $request)
+    public function disableEmpresa(DisableEmpresaRequest $request)
     {
 
         $tokenUser = $this->decodeToken($request);
 
-        if ($tokenUser->id_tipo_user != '1') {
+        if ($tokenUser->id_tipo_user == 2) {
 
             return $this->formateMessageError('O usuario não tem autorização para desativar uma empresa', 401);
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Usuario\AuthenticateUsuarioRequest;
 use App\Http\Requests\Usuario\CreateUsuarioAdminRequest;
 use App\Http\Requests\Usuario\CreateUsuarioRequest;
+use App\Http\Requests\Usuario\ListUsuariosRequest;
 use App\Models\Empresa;
 use App\Models\RelacaoUsuarioEmpresa;
 use App\Models\TelefoneUsuario;
@@ -57,7 +58,7 @@ class UsuarioController extends Controller
 
         }
 
-        $empreSituation = isset($data['empresa']) ? $this->empresa->checkEmpreIsActive($data['empresa']) : 1;
+        $empreSituation = $this->empresa->checkEmpreIsActive($data['empresa']);
 
         if ($empreSituation == 0) {
 
@@ -205,12 +206,35 @@ class UsuarioController extends Controller
         ]);
     }
 
+    public function listUser(ListUsuariosRequest $request)
+    {
+
+        $empreSituation = isset($request['empresa']) ? $this->empresa->checkEmpreIsActive($request['empresa']) : 1;
+
+        if ($empreSituation == 0) {
+
+            return $this->formateMessageError("Não será possivel efetuar a consulta, empresa inativa", 500);
+
+        }
+        
+        $consult = $this->usuarioEmpresa->consultUser($request['empresa']);
+
+        foreach ($consult as $value) {
+
+            $consultUser[] = $this->usuario->getUserWithId($value['id_usuario']);
+
+        }
+
+        return $consultUser;
+
+    }
+
     private function decodeToken(object $request)
     {
 
         $reqToken = $request->bearerToken();
         $decoded = $this->checkToken($reqToken)->sub;
-        return $this->usuario->getUserWithId($decoded)->first();
+        return $this->usuario->getUserWithId($decoded);
 
     }
 
