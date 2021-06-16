@@ -19,9 +19,8 @@ class Funcionario extends Model
         'id_usuario'
     ];
 
-    public function getFuncId($id){
-
+    public function getFuncId($id)
+    {
         return $this->where('id_funcionario', $id)->get();
-
     }
 }

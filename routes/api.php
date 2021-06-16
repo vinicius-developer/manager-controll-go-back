@@ -1,10 +1,11 @@
 <?php
 
+use App\Http\Controllers\FuncionarioController;
+use App\Http\Controllers\AtestadoController;
 use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\UsuarioController;
-use App\Http\Controllers\FuncionarioController;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Hash;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,6 +21,10 @@ use Illuminate\Support\Facades\Route;
 Route::post('login', [UsuarioController::class, 'authenticate']);
 
 Route::middleware(['checktoken'])->group(function () {
+
+    Route::prefix('atestados')->group(function() {
+        Route::post('create', [AtestadoController::class, 'create']);
+    });
 
     Route::prefix('usuario')->group(function () {
 
