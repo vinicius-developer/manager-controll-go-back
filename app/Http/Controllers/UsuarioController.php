@@ -14,6 +14,7 @@ use App\Traits\Authenticate;
 use App\Traits\FormatData;
 use App\Traits\ResponsaMessage;
 use Exception;
+use JetBrains\PhpStorm\NoReturn;
 
 class UsuarioController extends Controller
 {
@@ -42,6 +43,7 @@ class UsuarioController extends Controller
     {
 
         $userToken = $this->decodeToken($request);
+
         $data = $this->checkSintaxeWithReference($request->all(), $this->formatInsertUser);
 
         if ($userToken->id_tipo_usuario == 1) {
@@ -117,6 +119,7 @@ class UsuarioController extends Controller
     {
 
         $userToken = $this->decodeToken($request);
+
         $data = $this->checkSintaxeWithReference($request->all(), $this->formatInsertUser);
 
         if ($userToken->id_tipo_usuario != 1) {
@@ -168,11 +171,13 @@ class UsuarioController extends Controller
     public function authenticate(AuthenticateUsuarioRequest $request)
     {
         $data = $this->usuario->getUserWithEmail($request->email);
+
         $usersExists = $this->checkUsersExists($request->password, $data);
 
         if ($data->id_tipo_usuario == 2) {
 
             $userEmpre = $this->usuarioEmpresa->getUserEmpre($data->id_usuario);
+
             $empreSituation = $this->empresa->checkEmpreIsActive($userEmpre);
 
             if ($empreSituation == 0) {
@@ -193,7 +198,7 @@ class UsuarioController extends Controller
 
         } else {
 
-            return $this->formateMessageError('Senha está incorreta', 422);
+            return $this->formateMessageError('Senha está incorreta', 401);
 
         }
 
@@ -216,7 +221,7 @@ class UsuarioController extends Controller
             return $this->formateMessageError("Não será possivel efetuar a consulta, empresa inativa", 500);
 
         }
-        
+
         $consult = $this->usuarioEmpresa->consultUser($request['empresa']);
 
         foreach ($consult as $value) {
@@ -226,15 +231,6 @@ class UsuarioController extends Controller
         }
 
         return $consultUser;
-
-    }
-
-    private function decodeToken(object $request)
-    {
-
-        $reqToken = $request->bearerToken();
-        $decoded = $this->checkToken($reqToken)->sub;
-        return $this->usuario->getUserWithId($decoded);
 
     }
 

@@ -28,6 +28,11 @@ class Usuario extends Model
         return $this->where('id_usuario', $id)->first();
     }
 
+    public static function getUserWithIdStatic($id)
+    {
+        return self::where('id_usuario', $id)->first();
+    }
+
     public function isAdmin($id)
     {
         return $this->where('id_usuario', $id)

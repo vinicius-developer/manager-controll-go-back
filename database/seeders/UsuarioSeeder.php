@@ -3,10 +3,13 @@
 namespace Database\Seeders;
 
 use App\Models\Usuario;
+use App\Traits\Authenticate;
 use Illuminate\Database\Seeder;
 
 class UsuarioSeeder extends Seeder
 {
+    use Authenticate;
+
     /**
      * Run the database seeds.
      *
@@ -18,7 +21,7 @@ class UsuarioSeeder extends Seeder
             'nome' => 'Admin',
             'id_tipo_usuario' => 1,
             'email' => 'Admin@admin.com',
-            'password' => 'Aa@123456'
+            'password' => $this->generatePassword('Aa@123456')
         ]);
     }
 }

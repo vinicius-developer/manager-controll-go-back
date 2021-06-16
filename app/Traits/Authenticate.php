@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use Illuminate\Support\Facades\Hash;
 use Firebase\JWT\JWT as FirebaseJWT;
+use App\Models\Usuario;
 
 trait Authenticate
 {
@@ -38,7 +39,7 @@ trait Authenticate
      * @param string $aud
      * @return string
      */
-    public function generateToken(int $id, string $aud):string
+    public function generateToken(int $id, string $aud): string
     {
         $assign = config('jwtAssing.assing');
 
@@ -60,9 +61,27 @@ trait Authenticate
      * Checa se o token é valido
      *
      * @param string $token
+     * @return object
      */
-    public function checkToken(string $token)
+    public function checkToken(string $token): object
     {
         return FirebaseJWT::decode($token, config('jwtAssing.assing'), array('HS256'));
+    }
+
+    /**
+     * Decodifica o token e identifica o usuario
+     *
+     * @param object $request
+     * @return mixed
+     */
+    public function decodeToken(object $request): mixed
+    {
+
+        $reqToken = $request->bearerToken();
+
+        $decoded = $this->checkToken($reqToken)->sub;
+
+        return Usuario::getUserWithIdStatic($decoded)->first();
+
     }
 }

@@ -16,8 +16,8 @@ class EmpresaController extends Controller
 {
     use Authenticate, FormatData, ResponsaMessage;
 
-    private $empresa;
     private $cnaeEmpresa;
+    private $empresa;
     private $usuario;
 
     public function __construct()
@@ -35,7 +35,7 @@ class EmpresaController extends Controller
 
     public function createEmpresa(CreateEmpresaRequest $request)
     {
-        
+
         $tokenUser = $this->decodeToken($request);
 
         if ($tokenUser->id_tipo_user == '2') {
@@ -100,14 +100,5 @@ class EmpresaController extends Controller
 
     }
 
-    // Decodifica o token e identifica o usuario
 
-    private function decodeToken(object $request)
-    {
-
-        $reqToken = $request->bearerToken();
-        $decoded = $this->checkToken($reqToken)->sub;
-        return $this->usuario->getUserWithId($decoded)->first();
-
-    }
 }
