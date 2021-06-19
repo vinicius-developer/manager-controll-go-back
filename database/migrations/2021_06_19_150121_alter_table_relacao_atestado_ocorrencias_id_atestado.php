@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AlterAtestados extends Migration
+class AlterTableRelacaoAtestadoOcorrenciasIdAtestado extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,10 @@ class AlterAtestados extends Migration
      */
     public function up()
     {
-        Schema::table('atestados', function(Blueprint $table) {
-           $table->enum('ocorrencia', [1, 0])->default(0);
-           $table->enum('tratado', [1]);
+        Schema::table('relacao_atestado_ocorrencias', function (Blueprint $table) {
+            $table->foreign('id_atestado')->references('id_atestado')->on('atestados');
         });
+
     }
 
     /**
@@ -26,9 +26,9 @@ class AlterAtestados extends Migration
      */
     public function down()
     {
-        Schema::table('atestados', function (Blueprint $table) {
-            $table->dropColumn('ocorrencia');
-            $table->dropColumn('tratado');
+        Schema::table('relacao_atestado_ocorrencias', function (Blueprint $table) {
+            $table->dropForeign(['id_atestado']);
         });
+
     }
 }

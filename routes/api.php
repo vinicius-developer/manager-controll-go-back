@@ -1,9 +1,9 @@
 <?php
 
+use App\Http\Controllers\AtestadoController;
 use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\FuncionarioController;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -40,19 +40,16 @@ Route::middleware(['checktoken'])->group(function () {
 
         Route::post('create', [FuncionarioController::class, 'createFuncionario']);
         Route::post('delete', [FuncionarioController::class, 'deleteFuncionario']);
+        Route::get('list', [FuncionarioController::class, 'listFuncionario']);
 
+    });
+
+    Route::prefix('atestado')->group(function(){
+
+        Route::post('create', [AtestadoController::class, 'create']);
 
     });
 
 });
 
-// Gera uma senha encriptada para testar a api
 
-Route::post('senhaTeste', function () {
-
-    $Hsenha = Hash::make('Aa@123456', ['rounds' => 12]);
-    return response()->json([
-        'senha' => $Hsenha,
-    ]);
-
-});

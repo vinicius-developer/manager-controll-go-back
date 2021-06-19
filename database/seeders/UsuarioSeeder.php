@@ -23,5 +23,6 @@ class UsuarioSeeder extends Seeder
             'email' => 'Admin@admin.com',
             'password' => $this->generatePassword('Aa@123456')
         ]);
+        
     }
 }

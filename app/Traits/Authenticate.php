@@ -72,9 +72,9 @@ trait Authenticate
      * Decodifica o token e identifica o usuario
      *
      * @param object $request
-     * @return mixed
+     * @return object
      */
-    public function decodeToken(object $request): mixed
+    public function decodeToken(object $request): object
     {
 
         $reqToken = $request->bearerToken();

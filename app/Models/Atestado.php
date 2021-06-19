@@ -15,6 +15,18 @@ class Atestado extends Model
         'crm_medico',
         'id_funcionario',
         'data_lancamento',
-        'termino_de_descanco'
+        'termino_de_descanco',
+        'id_usuario',
     ];
+
+    public function getAtestadoId($data)
+    {
+
+        return $this->where("crm_medico", $data['crm_medico'])
+            ->where('id_funcionario', $data['id_funcionario'])
+            ->where('data_lancamento', $data['data_lancamento'])
+            ->value('id_atestado');
+
+    }
+
 }

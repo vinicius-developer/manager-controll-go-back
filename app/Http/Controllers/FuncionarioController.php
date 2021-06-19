@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Funcionarios\CreateFuncionarioRequest;
 use App\Http\Requests\Funcionarios\DeleteFuncionarioRequest;
+use App\Http\Requests\Funcionarios\ListFuncionariosRequest;
 use App\Models\Empresa;
 use App\Models\Funcionario;
 use App\Models\RelacaoUsuarioEmpresa;
@@ -99,6 +100,27 @@ class FuncionarioController extends Controller
         }
 
         return $this->formateMessageSuccess("Funcionario deletado com sucesso");
+
+    }
+
+    public function listFuncionario(ListFuncionariosRequest $request){
+
+        $tokenUserEmpre = $this->tokenRelUserEmpre($request);
+        $data = $this->checkSintaxeWithReference($request->all(), $this->formatInsertFunc);
+
+        if(isset($tokenUserEmpre)){
+
+            return $this->funcionario->listFunc($tokenUserEmpre['id_empresa']);
+
+        }else if(!isset($data['id_empresa'])){
+
+            return $this->formateMessageError("Informe a empresa que deseja consultar", 500);
+
+        }else{
+
+            return $this->funcionario->listFunc($data['id_empresa']);
+
+        }
 
     }
 

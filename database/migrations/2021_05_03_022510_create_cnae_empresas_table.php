@@ -17,7 +17,7 @@ class CreateCnaeEmpresasTable extends Migration
             $table->id('id_cnae_empresa');
 
             $table->unsignedInteger('id_empresa');
-            $table->char('codigo_cnae', 7);
+            $table->char('codigo_cnae', 9);
 
             $table->timestamps();
         });

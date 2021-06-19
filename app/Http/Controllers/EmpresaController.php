@@ -10,6 +10,7 @@ use App\Models\Usuario;
 use App\Traits\Authenticate;
 use App\Traits\FormatData;
 use App\Traits\ResponsaMessage;
+use Illuminate\Support\Facades\Http;
 use Exception;
 
 class EmpresaController extends Controller
@@ -52,7 +53,17 @@ class EmpresaController extends Controller
             $idEmpre = $this->empresa::where('cnpj', $data['cnpj'])->value('id_empresa');
             $cnaeEmpre = array_unique(explode(', ', $data['cnae_empresa']));
 
+
             foreach ($cnaeEmpre as $cnae) {
+
+                $clearCnae = preg_replace(['(\D)', '(\W)'], '', $cnae);
+                $checkCnae = Http::get('http://localhost:8000/cnae/find/'.$clearCnae);
+
+                if(!isset($checkCnae['status'])){
+
+                    return $this->formateMessageError("O cnae ".$cnae." não foi encontrado", 500);
+
+                };
 
                 $cnaeData = [
                     'id_empresa' => $idEmpre,
