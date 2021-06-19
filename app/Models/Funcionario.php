@@ -23,4 +23,9 @@ class Funcionario extends Model
     {
         return $this->where('id_funcionario', $id)->get();
     }
+
+    public function getFuncEmpre($id)
+    {
+        return $this->where('id_funcionario', $id)->value('id_empresa');
+    }
 }

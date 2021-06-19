@@ -53,11 +53,10 @@ class EmpresaController extends Controller
             $idEmpre = $this->empresa::where('cnpj', $data['cnpj'])->value('id_empresa');
             $cnaeEmpre = array_unique(explode(', ', $data['cnae_empresa']));
 
-
             foreach ($cnaeEmpre as $cnae) {
 
                 $clearCnae = preg_replace(['(\D)', '(\W)'], '', $cnae);
-                $checkCnae = Http::get('http://localhost:8000/cnae/find/'.$clearCnae);
+                $checkCnae = Http::get('http://localhost:8080/cnae/find/'.$clearCnae);
 
                 if(!isset($checkCnae['status'])){
 

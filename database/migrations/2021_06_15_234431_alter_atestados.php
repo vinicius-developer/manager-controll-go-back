@@ -14,8 +14,8 @@ class AlterAtestados extends Migration
     public function up()
     {
         Schema::table('atestados', function(Blueprint $table) {
-           $table->enum('ocorrencia', [1, 0])->default(0);
-           $table->enum('tratado', [1]);
+           $table->smallInteger('ocorrencia');
+           $table->smallInteger('tratado')->default(0);
         });
     }
 

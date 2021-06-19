@@ -7,6 +7,7 @@ use App\Models\Atestado;
 use App\Models\CnaeEmpresa;
 use App\Models\Funcionario;
 use App\Models\RelacaoAtestadoCid;
+use App\Models\RelacaoAtestadoOcorrencia;
 use App\Traits\Authenticate;
 use App\Traits\FormatData;
 use App\Traits\ResponsaMessage;
@@ -21,13 +22,15 @@ class AtestadoController extends Controller
     private $relAtestadoCid;
     private $funcionario;
     private $relCnaeEmpre;
+    private $relAtestadoOcorrencia;
 
     public function __construct()
     {
         $this->atestado = new Atestado();
         $this->relAtestadoCid = new RelacaoAtestadoCid();
         $this->funcionario = new Funcionario();
-        $this->relCnaeEmpre = new CnaeEmpresa;
+        $this->relCnaeEmpre = new CnaeEmpresa();
+        $this->relAtestadoOcorrencia = new RelacaoAtestadoOcorrencia();
     }
 
     private $formatInsertAtestado = [
@@ -35,7 +38,7 @@ class AtestadoController extends Controller
         'crm-medico' => 'crm_medico',
         'codigo-cid' => 'codigo_cid',
         'data-atestado' => 'data_lancamento',
-        'data-termino' => 'termino_de_descanco',
+        'data-termino' => 'termino_de_descanso',
     ];
 
     public function create(AtestadoCreateRequest $request)
@@ -49,34 +52,58 @@ class AtestadoController extends Controller
             $atestadoEmpre = $this->funcionario->getFuncEmpre($data['id_funcionario']);
             $atestadoEmpreCnae = $this->relCnaeEmpre->getEmpreCnae($atestadoEmpre);
             $cnaeList = [];
-            $dataCodigoCid = explode(', ', $data['codigo_cid']);
+            $dataCodigoCid = array_unique(explode(', ', $data['codigo_cid']));
 
-
-            foreach($atestadoEmpreCnae as $cnae){
+            foreach ($atestadoEmpreCnae as $cnae) {
 
                 array_push($cnaeList, $cnae['codigo_cnae']);
-                
+
             }
 
             $response = Http::get('http://localhost:8080/relationship/exists-group', [
 
                 "cnaes" => $cnaeList,
-                "cid10" => $dataCodigoCid
+                "cid10" => $dataCodigoCid,
 
             ]);
+
+            if ($response['message'][0]['total'] != 0) {
+
+                $data['ocorrencia'] = count($response['message'][0]['relationship']);
+                $data['tratado'] = 0;
+
+            }
 
             $this->atestado->create($data);
 
             $data['id_atestado'] = $this->atestado->getAtestadoId($data);
 
-            if($response['message'][0]['total'] != 0){
+            if ($response['message'][0]['total'] != 0) {
 
-                
+                foreach($response['message'][0]['relationship'] as $relationship){
 
+                    $this->relAtestadoOcorrencia->create([
+
+                        'codigo_cid' => $relationship['codigo_cid'],
+                        'codigo_cnae' => $relationship['codigo_cnae'],
+                        'id_atestado' => $data['id_atestado']
+
+                    ]);
+
+                };
 
             }
 
-            $this->relAtestadoCid->create($data);
+            foreach ($dataCodigoCid as $cid) {
+
+                $this->relAtestadoCid->create([
+
+                    'codigo_cid' => $cid,
+                    'id_atestado' => $data['id_atestado'],
+
+                ]);
+
+            }
 
         } catch (Exception $e) {
 
@@ -84,7 +111,8 @@ class AtestadoController extends Controller
 
         }
 
-        return "cadastrado";
+        return $this->formateMessageSuccess("Atestado cadastro com sucesso");
+
 
     }
 

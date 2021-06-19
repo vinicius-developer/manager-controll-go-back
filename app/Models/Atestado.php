@@ -15,8 +15,10 @@ class Atestado extends Model
         'crm_medico',
         'id_funcionario',
         'data_lancamento',
-        'termino_de_descanco',
+        'termino_de_descanso',
         'id_usuario',
+        'ocorrencia',
+        'tratado'
     ];
 
     public function getAtestadoId($data)
