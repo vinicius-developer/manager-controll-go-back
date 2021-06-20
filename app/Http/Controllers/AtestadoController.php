@@ -8,11 +8,13 @@ use App\Models\CnaeEmpresa;
 use App\Models\Funcionario;
 use App\Models\RelacaoAtestadoCid;
 use App\Models\RelacaoAtestadoOcorrencia;
+use App\Models\RelacaoUsuarioEmpresa;
 use App\Traits\Authenticate;
 use App\Traits\FormatData;
 use App\Traits\ResponsaMessage;
 use Exception;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Request;
 
 class AtestadoController extends Controller
 {
@@ -23,6 +25,7 @@ class AtestadoController extends Controller
     private $funcionario;
     private $relCnaeEmpre;
     private $relAtestadoOcorrencia;
+    private $relacaoUsuarioEmpresas;
 
     public function __construct()
     {
@@ -31,6 +34,7 @@ class AtestadoController extends Controller
         $this->funcionario = new Funcionario();
         $this->relCnaeEmpre = new CnaeEmpresa();
         $this->relAtestadoOcorrencia = new RelacaoAtestadoOcorrencia();
+        $this->relacaoUsuarioEmpresas = new RelacaoUsuarioEmpresa();
     }
 
     private $formatInsertAtestado = [
@@ -112,8 +116,16 @@ class AtestadoController extends Controller
         }
 
         return $this->formateMessageSuccess("Atestado cadastro com sucesso");
-
-
     }
+
+    public function countOccurrence(Request $request, $id_empresa)
+    {
+        $user = $this->decodeToken($request);
+
+        dd($this->relacaoUsuarioEmpresas
+            ->getRelationShip($user->id_usuario, $id_empresa)
+            ->exists());
+    }
+
 
 }

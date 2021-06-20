@@ -28,7 +28,7 @@ class CreateUsuarioRequest extends FormRequest
             'email' => ['required', 'email:rfc,dns'],
             'password' => ['required', 'confirmed'],
             'empresa' => ['exists:empresas,id_empresa'],
-            'telefones_usuarios.*' => ['required', 'regex:/(\(?\d{2})\)?(\(?\d{2}\)?\s)?(\d{4,5}\-\d{4})/']
+            'telefones_usuarios.*' => ['required']
         ];
     }
 
@@ -42,7 +42,6 @@ class CreateUsuarioRequest extends FormRequest
             'password.confirmed' => 'As senha não são iguais',
             'empresa.exists' => 'Essa empresa não está cadastrada em nosso sistema',
             'telefones_usuarios.*.required' => 'É necessário informar o telefone',
-            'telefones_usuarios.*.regex' => 'Telefone não possui formato válido'
         ];
     }
 }
