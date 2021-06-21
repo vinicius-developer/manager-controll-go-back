@@ -65,7 +65,9 @@ trait Authenticate
      */
     public function checkToken(string $token): object
     {
+
         return FirebaseJWT::decode($token, config('jwtAssing.assing'), array('HS256'));
+
     }
 
     /**

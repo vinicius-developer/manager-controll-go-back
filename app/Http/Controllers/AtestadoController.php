@@ -15,6 +15,7 @@ use App\Traits\FormatData;
 use App\Traits\ResponsaMessage;
 use Exception;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Request;
 
 class AtestadoController extends Controller
 {
@@ -116,15 +117,24 @@ class AtestadoController extends Controller
         }
 
         return $this->formateMessageSuccess("Atestado cadastro com sucesso");
-
     }
 
-    public function listAtestadoOcorrencias(ListAtestadoOcorrenciasRequest $request){
+    public function listAtestadoOcorrencias(ListAtestadoOcorrenciasRequest $request)
+    {
 
         $tokenUser = $this->decodeToken($request);
 
         return $this->relUserEmpre->getUserEmpre($tokenUser['id_usuario']);
-
     }
+
+    public function countOccurrence(Request $request, $id_empresa)
+    {
+        $user = $this->decodeToken($request);
+
+        dd($this->relacaoUsuarioEmpresas
+            ->getRelationShip($user->id_usuario, $id_empresa)
+            ->exists());
+    }
+
 
 }

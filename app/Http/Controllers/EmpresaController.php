@@ -7,15 +7,15 @@ use App\Http\Requests\Empresa\DisableEmpresaRequest;
 use App\Models\CnaeEmpresa;
 use App\Models\Empresa;
 use App\Models\Usuario;
+use App\Traits\ApiCnaeCid;
 use App\Traits\Authenticate;
 use App\Traits\FormatData;
 use App\Traits\ResponsaMessage;
-use Illuminate\Support\Facades\Http;
 use Exception;
 
 class EmpresaController extends Controller
 {
-    use Authenticate, FormatData, ResponsaMessage;
+    use Authenticate, FormatData, ResponsaMessage, ApiCnaeCid;
 
     private $cnaeEmpresa;
     private $empresa;
@@ -28,52 +28,26 @@ class EmpresaController extends Controller
         $this->usuario = new Usuario();
     }
 
-    private $formatInsertEmpre = [
-
-        'cnae' => 'cnae_empresa',
-
-    ];
 
     public function createEmpresa(CreateEmpresaRequest $request)
     {
-
         $tokenUser = $this->decodeToken($request);
-
-        if ($tokenUser->id_tipo_user == '2') {
-
-            return $this->formateMessageError('O usuario não tem autorização para cadastrar empresas', 401);
-
-        }
-
-        $data = $this->checkSintaxeWithReference($request->all(), $this->formatInsertEmpre);
 
         try {
 
-            $this->empresa->create($data);
-            $idEmpre = $this->empresa::where('cnpj', $data['cnpj'])->value('id_empresa');
-            $cnaeEmpre = array_unique(explode(', ', $data['cnae_empresa']));
+            $idEmpresa = $this->empresa->create([
+                'cnpj' => $request->cnpj,
+                'nome_fantasia' => $request->nome_fantasia,
+                'razao_social' => $request->razao_social
+            ])->id_empresa;
 
-            foreach ($cnaeEmpre as $cnae) {
+            $cnaesEmpresa = array_unique($request->cnae);
 
-                $clearCnae = preg_replace(['(\D)', '(\W)'], '', $cnae);
-                $checkCnae = Http::get('http://localhost:8080/cnae/find/'.$clearCnae);
-
-                if(!isset($checkCnae['status'])){
-
-                    return $this->formateMessageError("O cnae ".$cnae." não foi encontrado", 500);
-
-                };
-
-                $cnaeData = [
-                    'id_empresa' => $idEmpre,
-                    'codigo_cnae' => $cnae,
-                ];
-
-                $this->cnaeEmpresa->create($cnaeData);
-
-            }
+            $this->insertCnae($idEmpresa, $cnaesEmpresa);
 
         } catch (Exception $e) {
+
+            dd($e);
 
             return $this->formateMessageError("Não foi possível fazer a inserção de dados", 500);
 
@@ -108,6 +82,24 @@ class EmpresaController extends Controller
 
         return $this->formateMessageSuccess("Empresa desativada com sucesso");
 
+    }
+
+    public function insertCnae($idEmpresa, $cnaes)
+    {
+        foreach ($cnaes as $cnae) {
+
+            $checkCnae = $this->findCnae($cnae);
+
+            if($checkCnae->serverError()){
+                return $this->formateMessageError("O cnae $cnae não foi encontrado", 500);
+            };
+
+            $this->cnaeEmpresa->create([
+                'id_empresa' => $idEmpresa,
+                'codigo_cnae' => $cnae,
+            ]);
+
+        }
     }
 
 

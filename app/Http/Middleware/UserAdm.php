@@ -2,15 +2,14 @@
 
 namespace App\Http\Middleware;
 
+use Closure;
 use Illuminate\Http\Request;
 use App\Traits\Authenticate;
-use Exception;
-use Closure;
+use App\Traits\ResponsaMessage;
 
-class ValidateToken
+class UserAdm
 {
-
-    use Authenticate;
+    use Authenticate, ResponsaMessage;
 
     /**
      * Handle an incoming request.
@@ -21,19 +20,16 @@ class ValidateToken
      */
     public function handle(Request $request, Closure $next)
     {
-        $token = $request->bearerToken();
 
-        try {
+        $user = $this->decodeToken($request);
 
-            $this->checkToken($token);
+        if($user->id_tipo_usuario === 1) {
 
-        } catch(Exception $e) {
-
-
-            return response()->json(['status' => false, 'errors' => 'Você não tem acesso a essa ação'], 401);
+            return $next($request);
 
         }
 
-        return $next($request);
+        $this->formateMessageError('Seu usuário não consegue realizar essa ação', 401);
+
     }
 }

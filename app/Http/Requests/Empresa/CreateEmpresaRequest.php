@@ -24,7 +24,7 @@ class CreateEmpresaRequest extends FormRequest
     public function rules()
     {
         return [
-            'cnpj' => ['required', 'max:14'],
+            'cnpj' => ['required', 'max:19'],
             'nome_fantasia' => ['sometimes'],
             'razao_social' => ['required'],
             'cnae.*' => ['required', 'regex:/(\(?\d{4}\)?(\-\d)?(\/\d{2}))/']
