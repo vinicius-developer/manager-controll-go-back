@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Atestado\AtestadoCreateRequest;
+use App\Http\Requests\Atestado\ListAtestadoOcorrenciasRequest;
 use App\Models\Atestado;
 use App\Models\CnaeEmpresa;
 use App\Models\Funcionario;
 use App\Models\RelacaoAtestadoCid;
 use App\Models\RelacaoAtestadoOcorrencia;
+use App\Models\RelacaoUsuarioEmpresa;
 use App\Traits\Authenticate;
 use App\Traits\FormatData;
 use App\Traits\ResponsaMessage;
@@ -23,6 +25,7 @@ class AtestadoController extends Controller
     private $funcionario;
     private $relCnaeEmpre;
     private $relAtestadoOcorrencia;
+    private $relUserEmpre;
 
     public function __construct()
     {
@@ -31,6 +34,7 @@ class AtestadoController extends Controller
         $this->funcionario = new Funcionario();
         $this->relCnaeEmpre = new CnaeEmpresa();
         $this->relAtestadoOcorrencia = new RelacaoAtestadoOcorrencia();
+        $this->relUserEmpre = new RelacaoUsuarioEmpresa();
     }
 
     private $formatInsertAtestado = [
@@ -113,6 +117,13 @@ class AtestadoController extends Controller
 
         return $this->formateMessageSuccess("Atestado cadastro com sucesso");
 
+    }
+
+    public function listAtestadoOcorrencias(ListAtestadoOcorrenciasRequest $request){
+
+        $tokenUser = $this->decodeToken($request);
+
+        return $this->relUserEmpre->getUserEmpre($tokenUser['id_usuario']);
 
     }
 

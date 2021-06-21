@@ -24,6 +24,7 @@ Route::middleware(['checktoken'])->group(function () {
     Route::prefix('atestado')->group(function() {
 
         Route::post('create', [AtestadoController::class, 'create']);
+        Route::get('listAtestadoOcorrencias', [AtestadoController::class, 'listAtestadoOcorrencias']);        
 
     });
 

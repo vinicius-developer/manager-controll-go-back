@@ -76,15 +76,17 @@ class UsuarioController extends Controller
 
         }
 
+
         $data['password'] = $this->generatePassword($data['password']);
         $data['id_tipo_usuario'] = 2;
+
 
         try {
 
             $this->usuario->create($data);
 
             $idUser = $this->usuario->getUserWithEmail($data['email'])->id_usuario;
-            $reqTels = array_unique(explode(', ', $data['telefone_usuario']));
+            $reqTels = array_unique($data['telefone_usuario']);
 
             $userEmpreData = [
                 'id_empresa' => $data['empresa'],
@@ -105,6 +107,7 @@ class UsuarioController extends Controller
 
         } catch (Exception $e) {
 
+            return $e;
             return $this->formateMessageError("Não foi possível fazer a inserção de dados", 500);
 
         }
@@ -144,7 +147,7 @@ class UsuarioController extends Controller
             $this->usuario->create($data);
 
             $idUser = $this->usuario->getUserWithEmail($data['email'])->id_usuario;
-            $reqTels = array_unique(explode(', ', $data['telefone_usuario']));
+            $reqTels = array_unique($data['telefone_usuario']);
 
             foreach ($reqTels as $value) {
 
@@ -237,7 +240,7 @@ class UsuarioController extends Controller
     private function checkTelReq($data)
     {
 
-        $reqTels = array_unique(explode(', ', $data));
+        $reqTels = array_unique($data);
         $cadTels = $this->telefone->getAllTel();
 
         foreach ($cadTels as $cadTel) {

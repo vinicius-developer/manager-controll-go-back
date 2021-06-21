@@ -81,7 +81,7 @@ trait Authenticate
 
         $decoded = $this->checkToken($reqToken)->sub;
 
-        return Usuario::getUserWithIdStatic($decoded)->first();
+        return Usuario::getUserWithIdStatic($decoded);
 
     }
 }
