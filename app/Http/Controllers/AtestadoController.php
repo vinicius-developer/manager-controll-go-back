@@ -14,8 +14,8 @@ use App\Traits\Authenticate;
 use App\Traits\FormatData;
 use App\Traits\ResponsaMessage;
 use Exception;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class AtestadoController extends Controller
 {
@@ -48,16 +48,15 @@ class AtestadoController extends Controller
 
     public function create(AtestadoCreateRequest $request)
     {
-        $tokenUser = $this->decodeToken($request)->id_usuario;
         $data = $this->checkSintaxeWithReference($request->all(), $this->formatInsertAtestado);
-        $data['id_usuario'] = $tokenUser;
+        $data['id_usuario'] = $this->decodeToken($request)->id_usuario;
 
         try {
 
             $atestadoEmpre = $this->funcionario->getFuncEmpre($data['id_funcionario']);
             $atestadoEmpreCnae = $this->relCnaeEmpre->getEmpreCnae($atestadoEmpre);
             $cnaeList = [];
-            $dataCodigoCid = array_unique(explode(', ', $data['codigo_cid']));
+            $dataCodigoCid = array_unique($data['codigo_cid']);
 
             foreach ($atestadoEmpreCnae as $cnae) {
 
@@ -77,6 +76,11 @@ class AtestadoController extends Controller
                 $data['ocorrencia'] = count($response['message'][0]['relationship']);
                 $data['tratado'] = 0;
 
+            } else {
+
+                $data['ocorrencia'] = 0;
+                $data['tratado'] = 1;
+
             }
 
             $this->atestado->create($data);
@@ -85,13 +89,13 @@ class AtestadoController extends Controller
 
             if ($response['message'][0]['total'] != 0) {
 
-                foreach($response['message'][0]['relationship'] as $relationship){
+                foreach ($response['message'][0]['relationship'] as $relationship) {
 
                     $this->relAtestadoOcorrencia->create([
 
                         'codigo_cid' => $relationship['codigo_cid'],
                         'codigo_cnae' => $relationship['codigo_cnae'],
-                        'id_atestado' => $data['id_atestado']
+                        'id_atestado' => $data['id_atestado'],
 
                     ]);
 
@@ -113,6 +117,7 @@ class AtestadoController extends Controller
         } catch (Exception $e) {
 
             return $e;
+            return $this->formateMessageError("Não foi possível fazer a inserção de dados", 500);
 
         }
 
@@ -121,10 +126,39 @@ class AtestadoController extends Controller
 
     public function listAtestadoOcorrencias(ListAtestadoOcorrenciasRequest $request)
     {
-
         $tokenUser = $this->decodeToken($request);
+        $tokenEmpre = $this->relUserEmpre->getUserEmpre($tokenUser['id_usuario']);
 
-        return $this->relUserEmpre->getUserEmpre($tokenUser['id_usuario']);
+        if ($tokenUser['id_tipo_usuario'] == 1) {
+
+            $tokenAllEmpreFunc = $this->funcionario->getAllEmpreFunc($request['empresa']);
+
+        } else {
+
+            $tokenAllEmpreFunc = $this->funcionario->getAllEmpreFunc($tokenEmpre);
+
+        }
+
+        $listAtestadoOcorrencia = [];
+
+        foreach ($tokenAllEmpreFunc as $func) {
+
+            $atestadoOcorrencia = $this->atestado->getAtestado($func['id_funcionario']);
+
+            foreach ($atestadoOcorrencia as $atestado) {
+
+                if ($atestado['ocorrencia'] != 0) {
+
+                    array_push($listAtestadoOcorrencia, $atestado);
+
+                }
+                
+            }
+
+        }
+
+        return $listAtestadoOcorrencia;
+
     }
 
     public function countOccurrence(Request $request, $id_empresa)
@@ -132,9 +166,8 @@ class AtestadoController extends Controller
         $user = $this->decodeToken($request);
 
         dd($this->relacaoUsuarioEmpresas
-            ->getRelationShip($user->id_usuario, $id_empresa)
-            ->exists());
+                ->getRelationShip($user->id_usuario, $id_empresa)
+                ->exists());
     }
-
 
 }

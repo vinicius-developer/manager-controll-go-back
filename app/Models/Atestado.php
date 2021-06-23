@@ -31,4 +31,11 @@ class Atestado extends Model
 
     }
 
+    public function getAtestado($id_func){
+
+        return $this->where('id_funcionario', $id_func)
+                    ->get();
+
+    }
+
 }

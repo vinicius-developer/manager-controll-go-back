@@ -11,7 +11,7 @@ trait ApiCnaeCid
     {
         $clearCnae = preg_replace(['(\D)', '(\W)'], '', $cnae);
 
-        return Http::get(config('apis.api_cnae_cid') . "cnae/find/$clearCnae");
+        return Http::get(config('apis.api_cnae_cid') . "/cnae/find/$clearCnae");
     }
 
 }

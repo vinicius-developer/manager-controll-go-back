@@ -107,7 +107,6 @@ class UsuarioController extends Controller
 
         } catch (Exception $e) {
 
-            return $e;
             return $this->formateMessageError("Não foi possível fazer a inserção de dados", 500);
 
         }

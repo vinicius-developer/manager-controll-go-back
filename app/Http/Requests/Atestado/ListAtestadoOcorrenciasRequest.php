@@ -24,7 +24,14 @@ class ListAtestadoOcorrenciasRequest extends FormRequest
     public function rules()
     {
         return [
-            
+            'empresa' => ['exists:empresas,id_empresa']
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'empresa.exists' => 'Empresa informada não encontrada no banco de dados'
         ];
     }
 }

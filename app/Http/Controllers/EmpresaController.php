@@ -28,7 +28,6 @@ class EmpresaController extends Controller
         $this->usuario = new Usuario();
     }
 
-
     public function createEmpresa(CreateEmpresaRequest $request)
     {
         $tokenUser = $this->decodeToken($request);
@@ -38,14 +37,16 @@ class EmpresaController extends Controller
             $idEmpresa = $this->empresa->create([
                 'cnpj' => $request->cnpj,
                 'nome_fantasia' => $request->nome_fantasia,
-                'razao_social' => $request->razao_social
+                'razao_social' => $request->razao_social,
             ])->id_empresa;
 
-            $cnaesEmpresa = array_unique($request->cnae);
+            $cnaesEmpresa = array_unique($request['cnae_empresa']);
 
             $this->insertCnae($idEmpresa, $cnaesEmpresa);
 
         } catch (Exception $e) {
+
+            return $e;
 
             dd($e);
 
@@ -90,7 +91,7 @@ class EmpresaController extends Controller
 
             $checkCnae = $this->findCnae($cnae);
 
-            if($checkCnae->serverError()){
+            if ($checkCnae->serverError()) {
                 return $this->formateMessageError("O cnae $cnae não foi encontrado", 500);
             };
 
@@ -101,6 +102,5 @@ class EmpresaController extends Controller
 
         }
     }
-
 
 }
