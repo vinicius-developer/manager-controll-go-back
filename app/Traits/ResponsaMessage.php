@@ -17,9 +17,12 @@ trait ResponsaMessage
         ], $code);
     }
 
-    public function formateMessageSuccess($message)
+    public function formateMessageSuccess($message, $code = 200)
     {
-        return response()->json(['status' => true, 'message' => $message]);
+        return response()->json([
+            'status' => true, 
+            'message' => $message
+        ], $code);
 
     }
 }

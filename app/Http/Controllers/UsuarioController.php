@@ -24,10 +24,7 @@ class UsuarioController extends Controller
     private $telefone;
     private $usuarioEmpresa;
     private $empresa;
-
-    private $formatInsertUser = [
-        'tipo_usuario' => 'id_tipo_usuario',
-    ];
+   
 
     public function __construct()
     {
@@ -42,23 +39,15 @@ class UsuarioController extends Controller
     public function storeUser(CreateUsuarioRequest $request)
     {
 
-        $userToken = $this->decodeToken($request);
+        $user = $this->decodeToken($request);
 
-        $data = $this->checkSintaxeWithReference($request->all(), $this->formatInsertUser);
 
-        if ($userToken->id_tipo_usuario == 1) {
+        if (!isset($data['empresa'])) {
 
-            if (!isset($data['empresa'])) {
-
-                return $this->formateMessageError("Informe a empresa do usuario que deseja cadastrar", 500);
-
-            }
-
-        } else {
-
-            $data['empresa'] = $this->usuarioEmpresa->getUserEmpre($userToken->id_usuario);
+            return $this->formateMessageError("Informe a empresa do usuario que deseja cadastrar", 500);
 
         }
+
 
         $empreSituation = $this->empresa->checkEmpreIsActive($data['empresa']);
 

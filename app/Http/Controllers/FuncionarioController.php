@@ -103,24 +103,12 @@ class FuncionarioController extends Controller
 
     }
 
-    public function listFuncionario(ListFuncionariosRequest $request){
+    public function listFuncionario(ListFuncionariosRequest $request)
+    {
 
         $tokenUserEmpre = $this->tokenRelUserEmpre($request);
-        $data = $this->checkSintaxeWithReference($request->all(), $this->formatInsertFunc);
 
-        if(isset($tokenUserEmpre)){
-
-            return $this->funcionario->listFunc($tokenUserEmpre['id_empresa']);
-
-        }else if(!isset($data['id_empresa'])){
-
-            return $this->formateMessageError("Informe a empresa que deseja consultar", 500);
-
-        }else{
-
-            return $this->funcionario->listFunc($data['id_empresa']);
-
-        }
+        return $this->funcionario->getAllEmpreFunc($tokenUserEmpre->id_empresa);
 
     }
 

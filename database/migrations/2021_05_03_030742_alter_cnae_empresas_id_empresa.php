@@ -14,7 +14,10 @@ class AlterCnaeEmpresasIdEmpresa extends Migration
     public function up()
     {
         Schema::table('cnae_empresas', function (Blueprint $table) {
-            $table->foreign('id_empresa')->references('id_empresa')->on('empresas');
+            $table->foreign('id_empresa')
+                ->references('id_empresa')
+                ->on('empresas')
+                ->onDelete('cascade');
         });
     }
 

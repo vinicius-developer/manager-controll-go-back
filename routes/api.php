@@ -24,7 +24,8 @@ Route::middleware(['checktoken'])->group(function () {
     Route::prefix('atestado')->group(function() {
 
         Route::post('create', [AtestadoController::class, 'create']);
-        Route::get('listAtestadoOcorrencias', [AtestadoController::class, 'listAtestadoOcorrencias']);        
+
+        Route::get('listAtestadoOcorrencias', [AtestadoController::class, 'listAtestadoOcorrencias']);
 
         Route::get('count-occurrence/{id_empresa}', [AtestadoController::class, 'countOccurrence']);
 
@@ -32,9 +33,13 @@ Route::middleware(['checktoken'])->group(function () {
 
     Route::prefix('usuario')->group(function () {
 
-        Route::post('create', [UsuarioController::class, 'storeUser']);
+        Route::middleware(['useradmin'])->group(function () {
 
-        Route::post('createAdmin', [UsuarioController::class, 'storeUserAdmin']);
+            Route::post('create', [UsuarioController::class, 'storeUser']);
+
+            Route::post('createAdmin', [UsuarioController::class, 'storeUserAdmin']);
+
+        });
 
         Route::get('list', [UsuarioController::class, 'listUser']);
 
@@ -59,6 +64,11 @@ Route::middleware(['checktoken'])->group(function () {
 
         Route::post('delete', [FuncionarioController::class, 'deleteFuncionario']);
 
+        Route::middleware(['usercommom'])->group(function () {
+
+            Route::get('list', [FuncionarioController::class, 'listFuncionario']);
+
+        });
     });
 
 });

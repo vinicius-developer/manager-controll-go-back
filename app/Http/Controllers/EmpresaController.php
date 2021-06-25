@@ -6,31 +6,36 @@ use App\Http\Requests\Empresa\CreateEmpresaRequest;
 use App\Http\Requests\Empresa\DisableEmpresaRequest;
 use App\Models\CnaeEmpresa;
 use App\Models\Empresa;
+use App\Models\RelacaoUsuarioEmpresa;
 use App\Models\Usuario;
 use App\Traits\ApiCnaeCid;
 use App\Traits\Authenticate;
 use App\Traits\FormatData;
 use App\Traits\ResponsaMessage;
+use Carbon\Carbon;
 use Exception;
 
 class EmpresaController extends Controller
 {
     use Authenticate, FormatData, ResponsaMessage, ApiCnaeCid;
 
+    private $relacaoUsuarioEmpresa;
     private $cnaeEmpresa;
     private $empresa;
     private $usuario;
 
+
     public function __construct()
     {
-        $this->empresa = new Empresa();
+        $this->relacaoUsuarioEmpresa = new RelacaoUsuarioEmpresa();
         $this->cnaeEmpresa = new CnaeEmpresa();
+        $this->empresa = new Empresa();
         $this->usuario = new Usuario();
     }
 
     public function createEmpresa(CreateEmpresaRequest $request)
     {
-        $tokenUser = $this->decodeToken($request);
+        $cnaesEmpresa = array_unique($request['cnae']);
 
         try {
 
@@ -40,21 +45,51 @@ class EmpresaController extends Controller
                 'razao_social' => $request->razao_social,
             ])->id_empresa;
 
-            $cnaesEmpresa = array_unique($request['cnae_empresa']);
+        } catch (Exception $e) {
+
+            return $this->formateMessageError("CNPJ já está em uso, não pode ser repetido", 500);
+
+        }
+
+        try {
 
             $this->insertCnae($idEmpresa, $cnaesEmpresa);
 
         } catch (Exception $e) {
 
-            return $e;
-
-            dd($e);
-
-            return $this->formateMessageError("Não foi possível fazer a inserção de dados", 500);
+            return $this->formateMessageError('Erro ao tentar inserir o CNAE da empresa', 500);
 
         }
 
-        return $this->formateMessageSuccess("Empresa cadastrada com sucesso");
+        try {
+
+            $idUsuario = $this->usuario->create([
+                'nome' => $request->nome,
+                'email' => $request->email,
+                'id_tipo_usuario' => 2,
+                'password' => $this->generatePassword($request->password)
+            ])->id_usuario;
+
+        } catch(Exception $e) {
+
+            return $this->formateMessageError('Não foi possível inserir o primeiro usuário', 500);
+
+        }
+
+        try {
+
+            $this->relacaoUsuarioEmpresa->create([
+                'id_empresa' => $idEmpresa,
+                'id_usuario' => $idUsuario
+            ]);
+
+        } catch(Exception $e) {
+
+            return $this->formateMessageError('Não foi possível criar relação entre usuário e empresa', 500);
+
+        }
+
+        return $this->formateMessageSuccess("Empresa cadastrada com sucesso", 201);
 
     }
 

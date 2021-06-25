@@ -29,9 +29,8 @@ class Funcionario extends Model
         return $this->where('id_funcionario', $id)->value('id_empresa');
     }
 
-    public function getAllEmpreFunc($id_company){
-
+    public function getAllEmpreFunc($id_company)
+    {
         return $this->where('id_empresa', $id_company)->get('id_funcionario');
-
     }
 }

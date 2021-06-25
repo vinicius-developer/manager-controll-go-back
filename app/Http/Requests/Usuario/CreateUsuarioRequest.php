@@ -27,7 +27,7 @@ class CreateUsuarioRequest extends FormRequest
             'nome' => ['required', 'max:100'],
             'email' => ['required', 'email:rfc,dns'],
             'password' => ['required', 'confirmed'],
-            'empresa' => ['exists:empresas,id_empresa'],
+            'empresa' => ['exists:empresas,id_empresa', 'required'],
             'telefones_usuarios.*' => ['required']
         ];
     }
