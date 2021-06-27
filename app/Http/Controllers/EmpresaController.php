@@ -2,22 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Empresa\CreateEmpresaRequest;
 use App\Http\Requests\Empresa\DisableEmpresaRequest;
-use App\Models\CnaeEmpresa;
-use App\Models\Empresa;
+use App\Http\Requests\Empresa\CreateEmpresaRequest;
 use App\Models\RelacaoUsuarioEmpresa;
-use App\Models\Usuario;
-use App\Traits\ApiCnaeCid;
+use App\Traits\ResponseMessage;
 use App\Traits\Authenticate;
+use App\Models\CnaeEmpresa;
+use App\Traits\ApiCnaeCid;
 use App\Traits\FormatData;
-use App\Traits\ResponsaMessage;
-use Carbon\Carbon;
+use App\Models\Empresa;
+use App\Models\Usuario;
 use Exception;
 
 class EmpresaController extends Controller
 {
-    use Authenticate, FormatData, ResponsaMessage, ApiCnaeCid;
+    use Authenticate, FormatData, ResponseMessage, ApiCnaeCid;
 
     private $relacaoUsuarioEmpresa;
     private $cnaeEmpresa;
@@ -47,7 +46,7 @@ class EmpresaController extends Controller
 
         } catch (Exception $e) {
 
-            return $this->formateMessageError("CNPJ já está em uso, não pode ser repetido", 500);
+            return $this->formateMenssageError("CNPJ já está em uso, não pode ser repetido", 500);
 
         }
 
@@ -57,7 +56,7 @@ class EmpresaController extends Controller
 
         } catch (Exception $e) {
 
-            return $this->formateMessageError('Erro ao tentar inserir o CNAE da empresa', 500);
+            return $this->formateMenssageError('Erro ao tentar inserir o CNAE da empresa', 500);
 
         }
 
@@ -72,7 +71,7 @@ class EmpresaController extends Controller
 
         } catch(Exception $e) {
 
-            return $this->formateMessageError('Não foi possível inserir o primeiro usuário', 500);
+            return $this->formateMenssageError('Não foi possível inserir o primeiro usuário', 500);
 
         }
 
@@ -85,11 +84,11 @@ class EmpresaController extends Controller
 
         } catch(Exception $e) {
 
-            return $this->formateMessageError('Não foi possível criar relação entre usuário e empresa', 500);
+            return $this->formateMenssageError('Não foi possível criar relação entre usuário e empresa', 500);
 
         }
 
-        return $this->formateMessageSuccess("Empresa cadastrada com sucesso", 201);
+        return $this->formateMenssageSuccess("Empresa cadastrada com sucesso", 201);
 
     }
 
@@ -100,7 +99,7 @@ class EmpresaController extends Controller
 
         if ($tokenUser->id_tipo_user == 2) {
 
-            return $this->formateMessageError('O usuario não tem autorização para desativar uma empresa', 401);
+            return $this->formateMenssageError('O usuario não tem autorização para desativar uma empresa', 401);
 
         }
 
@@ -112,11 +111,11 @@ class EmpresaController extends Controller
 
         } catch (Exception $e) {
 
-            return $this->formateMessageError("Não foi possivel fazer a exclusão do banco de dados", 500);
+            return $this->formateMenssageError("Não foi possivel fazer a exclusão do banco de dados", 500);
 
         }
 
-        return $this->formateMessageSuccess("Empresa desativada com sucesso");
+        return $this->formateMenssageSuccess("Empresa desativada com sucesso");
 
     }
 
@@ -127,7 +126,7 @@ class EmpresaController extends Controller
             $checkCnae = $this->findCnae($cnae);
 
             if ($checkCnae->serverError()) {
-                return $this->formateMessageError("O cnae $cnae não foi encontrado", 500);
+                return $this->formateMenssageError("O cnae $cnae não foi encontrado", 500);
             };
 
             $this->cnaeEmpresa->create([

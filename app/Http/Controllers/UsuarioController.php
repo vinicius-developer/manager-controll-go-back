@@ -3,262 +3,257 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Usuario\AuthenticateUsuarioRequest;
-use App\Http\Requests\Usuario\CreateUsuarioAdminRequest;
+use App\Http\Requests\Usuario\SetCompanyUsuarioRequest;
 use App\Http\Requests\Usuario\CreateUsuarioRequest;
-use App\Http\Requests\Usuario\ListUsuariosRequest;
-use App\Models\Empresa;
 use App\Models\RelacaoUsuarioEmpresa;
+use Illuminate\Support\Collection;
+use Illuminate\Http\JsonResponse;
 use App\Models\TelefoneUsuario;
-use App\Models\Usuario;
+use App\Traits\ResponseMessage;
+use Illuminate\Http\Request; 
 use App\Traits\Authenticate;
-use App\Traits\FormatData;
-use App\Traits\ResponsaMessage;
+use App\Models\Empresa;
+use App\Models\Usuario;
 use Exception;
-use JetBrains\PhpStorm\NoReturn;
 
 class UsuarioController extends Controller
 {
-    use Authenticate, FormatData, ResponsaMessage;
+    use Authenticate, ResponseMessage;
 
-    private $usuario;
+    private $usuario_empresa;
     private $telefone;
-    private $usuarioEmpresa;
+    private $usuario;
     private $empresa;
    
 
     public function __construct()
     {
-        $this->usuario = new Usuario();
+        $this->usuario_empresa = new RelacaoUsuarioEmpresa();
         $this->telefone = new TelefoneUsuario();
-        $this->usuarioEmpresa = new RelacaoUsuarioEmpresa();
+        $this->usuario = new Usuario();
         $this->empresa = new Empresa();
     }
 
-    // Cria usuario
-
-    public function storeUser(CreateUsuarioRequest $request)
+    
+    /**
+     * Responsável por criar um usuário comum
+     * 
+     * @param CreateUsuarioRequest $request
+     * @return JsonResponse
+     */
+    public function storeUser(CreateUsuarioRequest $request): JsonResponse
     {
-
-        $user = $this->decodeToken($request);
-
-
-        if (!isset($data['empresa'])) {
-
-            return $this->formateMessageError("Informe a empresa do usuario que deseja cadastrar", 500);
-
-        }
-
-
-        $empreSituation = $this->empresa->checkEmpreIsActive($data['empresa']);
-
-        if ($empreSituation == 0) {
-
-            return $this->formateMessageError("Não será possivel efetuar o cadastro, empresa inativa", 500);
-
-        }
-
-        $telRep = $this->checkTelReq($data['telefone_usuario']);
-
-        if ($telRep == 1) {
-
-            return $this->formateMessageError("Telefone já cadastrado no banco de dados", 500);
-
-        }
-
-
-        $data['password'] = $this->generatePassword($data['password']);
-        $data['id_tipo_usuario'] = 2;
-
+        $token = $this->decodeToken($request);
 
         try {
 
-            $this->usuario->create($data);
+            $id_usuario = $this->usuario->create([
+                'nome' => $request->nome,
+                'id_tipo_usuario' => 2,
+                'email' => $request->email,
+                'password' => $this->generatePassword($request->password)
+            ])->id_usuario;
 
-            $idUser = $this->usuario->getUserWithEmail($data['email'])->id_usuario;
-            $reqTels = array_unique($data['telefone_usuario']);
-
-            $userEmpreData = [
-                'id_empresa' => $data['empresa'],
-                'id_usuario' => $idUser,
-            ];
-
-            $this->usuarioEmpresa->create($userEmpreData);
-
-            foreach ($reqTels as $value) {
-
-                $telData = [
-                    'id_usuario' => $idUser,
-                    'telefone' => $value,
-                ];
-
-                $this->telefone->create($telData);
-            }
+            $this->usuario_empresa->create([
+                'id_empresa' => $token->com,
+                'id_usuario' => $id_usuario
+            ]);
 
         } catch (Exception $e) {
 
-            return $this->formateMessageError("Não foi possível fazer a inserção de dados", 500);
+            return $this->formateMenssageError("Não foi possível fazer a inserção de dados", 500);
 
         }
 
-        return $this->formateMessageSuccess("Usuário cadastrado com sucesso");
-
+        return $this->formateMenssageSuccess("Usuário cadastrado com sucesso");
     }
 
-    // Cadastra usuarios admins
-
-    public function StoreUserAdmin(CreateUsuarioAdminRequest $request)
+    /**
+     * Responsável por criar um usuário admin
+     *  
+     * @param CreateUsuarioRequest $request
+     * @return JsonResponse
+     */    
+    public function StoreUserAdmin(CreateUsuarioRequest $request): JsonResponse
     {
-
-        $userToken = $this->decodeToken($request);
-
-        $data = $this->checkSintaxeWithReference($request->all(), $this->formatInsertUser);
-
-        if ($userToken->id_tipo_usuario != 1) {
-
-            return $this->formateMessageError("O usuario não tem autorização para cadastrar administradores", 500);
-
-        }
-
-        $telRep = $this->checkTelReq($data['telefone_usuario']);
-
-        if ($telRep == 1) {
-
-            return $this->formateMessageError("Telefone já cadastrado no banco de dados", 500);
-
-        }
-
-        $data['password'] = $this->generatePassword($data['password']);
-        $data['id_tipo_usuario'] = 1;
-
         try {
 
-            $this->usuario->create($data);
-
-            $idUser = $this->usuario->getUserWithEmail($data['email'])->id_usuario;
-            $reqTels = array_unique($data['telefone_usuario']);
-
-            foreach ($reqTels as $value) {
-
-                $telData = [
-                    'id_usuario' => $idUser,
-                    'telefone' => $value,
-                ];
-
-                $this->telefone->create($telData);
-            }
+            $this->usuario->create([
+                'nome' => $request->nome,
+                'email' => $request->email,
+                'password' => $this->generatePassword($request->password),
+                'id_tipo_usuario' => 1
+            ]);
 
         } catch (Exception $e) {
 
-            return $this->formateMessageError("Não foi possível fazer a inserção de dados", 500);
+            return $this->formateMenssageError("Não foi possível fazer a inserção de dados", 500);
 
         }
 
-        return $this->formateMessageSuccess("Usuário cadastrado com sucesso");
+        return $this->formateMenssageSuccess("Usuário cadastrado com sucesso");
 
     }
 
-    // Sistema de Login
-
-    public function authenticate(AuthenticateUsuarioRequest $request)
+    
+    /**
+     * Autenticação de usuário admin onde não é necessário 
+     * inserir a empresa do usuário
+     * 
+     * @param AuthenticateUsuarioRequest $request
+     * @return JsonResponse
+     */
+    public function authenticate(AuthenticateUsuarioRequest $request): JsonResponse
     {
-        $data = $this->usuario->getUserWithEmail($request->email);
+        $data = $this->verifyUser($request);
 
-        $usersExists = $this->checkUsersExists($request->password, $data);
+        if(!$data) {
 
-        if ($data->id_tipo_usuario == 2) {
+            return $this->formateMenssageError('Senha está incorreta', 401);
 
-            $userEmpre = $this->usuarioEmpresa->getUserEmpre($data->id_usuario);
+        } else if($data['id_tipo_usuario'] != 1) {
 
-            $empreSituation = $this->empresa->checkEmpreIsActive($userEmpre);
-
-            if ($empreSituation == 0) {
-
-                return $this->formateMessageError("Não será possivel efetuar o login, empresa inativa", 500);
-
-            }
+            return $this->formateMenssageError('Você não pode acessar essa ação', 403);
 
         }
 
-        if ($usersExists) {
+        return response()->json($this->configureResponseToken($data['id_usuario'], $request->url()));
+    }
 
-            $id = $data->id_usuario;
+    /**
+     * Autenticação de usuário comundo que é feito
+     * para retorna a lista de empresas que a pessoa 
+     * pode logar
+     * 
+     * @param AuthenticateUsuarioRequest $request
+     * @return JsonResponse
+     */
+    public function authenticateUser(AuthenticateUsuarioRequest $request): JsonResponse
+    {
+        $data = $this->verifyUser($request);
+        
+        if(!$data) {
 
-            $aud = $request->url();
+            return $this->formateMenssageError('Senha está incorreta', 401);
 
-            $token = $this->generateToken($id, $aud);
+        } else if($data['id_tipo_usuario'] != 2) {
 
-        } else {
-
-            return $this->formateMessageError('Senha está incorreta', 401);
+            return $this->formateMenssageError('Você não pode acessar essa ação', 403);
 
         }
 
-        return response()->json([
+        $message = $this->configureResponseToken($data['id_usuario'], $request->url());
+
+        $message['message']['list'] =  $this->usuario_empresa
+            ->getCompanies($data['id_usuario'])
+            ->select(
+                'e.id_empresa',
+                'e.nome_fantasia'
+            )
+            ->get();
+
+        return response()->json($message);
+    }
+
+    /**
+     * Inserir o claim da empresa durante a 
+     * autenticação
+     * 
+     * @param SetCompanyUsuarioRequest $request
+     * @return JsonResponse
+     */
+    public function setCompany(SetCompanyUsuarioRequest $request): JsonResponse
+    {
+        $token = $this->decodeToken($request);
+
+        $message = $this->configureResponseToken($token->sub, $request->url(), $request->company);
+
+        return response()->json($message);
+    }
+
+    /**
+     * Faz a listagem de usuário de uma empresa
+     * 
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function listUser(Request $request): JsonResponse
+    {
+        $token = $this->decodeToken($request);
+
+        $consult = $this->usuario_empresa->getUsersCompanies($token->com)
+            ->select(
+                'u.id_usuario',
+                'u.nome'
+            )
+            ->get();
+
+        return $this->formateMenssageSuccess(['usuarios' => $consult]);
+    }
+
+    /**
+     * Configura a responta json padrão para ser 
+     * retornado ao usuário
+     * 
+     * @param int $id_usuario
+     * @param string $aud
+     * @param mixed $com
+     * @return array
+     */
+    private function configureResponseToken(int $id_usuario, string $aud, mixed $com = null): array
+    {
+        $token = $this->generateToken($id_usuario, $aud, $com);
+
+        return [
             'status' => true,
             'message' => [
                 'token' => $token,
                 'exp' => '5 horas',
             ],
-        ]);
+        ];
     }
 
-    public function listUser(ListUsuariosRequest $request)
+
+    /**
+     * Verifica se o usuário existe
+     * 
+     * @param AuthenticateUsuarioRequest $request
+     * @return Collection
+     */
+    private function verifyUser(AuthenticateUsuarioRequest $request): Collection
     {
+        $data = $this->usuario->getUserWithEmail($request->email);
 
-        $empreSituation = isset($request['empresa']) ? $this->empresa->checkEmpreIsActive($request['empresa']) : 1;
-
-        if ($empreSituation == 0) {
-
-            return $this->formateMessageError("Não será possivel efetuar a consulta, empresa inativa", 500);
-
+        if(!$this->checkUsersExists($request->password, $data)) {
+            return false;
         }
 
-        $consult = $this->usuarioEmpresa->consultUser($request['empresa']);
-
-        foreach ($consult as $value) {
-
-            $consultUser[] = $this->usuario->getUserWithId($value['id_usuario']);
-
-        }
-
-        return $consultUser;
-
+        return collect($data->first()->toArray())
+            ->forget([
+                'password',
+                'created_at',
+                'updated_at'
+            ]);
     }
 
-    private function checkTelReq($data)
-    {
 
-        $reqTels = array_unique($data);
-        $cadTels = $this->telefone->getAllTel();
-
-        foreach ($cadTels as $cadTel) {
-
-            foreach ($reqTels as $tel) {
-
-                if ($tel === $cadTel['telefone']) {
-
-                    return true;
-
-                }
-
-            }
-
-        }
-
-    }
-
-    private function checkUsersExists($password, $data)
+    /**
+     * Checa se o usuário existe ou não
+     * 
+     * @param string $password
+     * @param Usuario $data  
+     * @return mixed
+     */
+    private function checkUsersExists(string $password, object $data): mixed
     {
 
         if ($data->exists()) {
 
-            return $this->checkPassword($password, $data->password);
+            return $this->checkPassword($password, $data->first()->password);
 
-        } else {
+        } 
 
-            return false;
-
-        }
+        return false;
 
     }
 

@@ -20,24 +20,23 @@ class Usuario extends Model
 
     public function getUserWithEmail($email)
     {
-        return $this->where('email', $email)->first();
+        return $this->where('email', $email);
     }
 
     public function getUserWithId($id)
     {
-        return $this->where('id_usuario', $id)->first();
+        return $this->where('id_usuario', $id);
     }
 
     public static function getUserWithIdStatic($id)
     {
-        return self::where('id_usuario', $id)->first();
+        return self::where('id_usuario', $id);
     }
 
-    public function isAdmin($id)
+    public static function isAdmin($id)
     {
-        return $this->where('id_usuario', $id)
-            ->where('id_tipo_usuario', 1)
-            ->first();
+        return self::where('id_usuario', $id)
+            ->where('id_tipo_usuario', 1);
     }
 
 }

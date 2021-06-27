@@ -17,11 +17,43 @@ use Illuminate\Support\Facades\Route;
 |
  */
 
-Route::post('login', [UsuarioController::class, 'authenticate']);
+Route::post('login-admin', [UsuarioController::class, 'authenticate']);
+
+Route::post('login', [UsuarioController::class, 'authenticateUser']);
+
+Route::post('set-company', [UsuarioController::class, 'setCompany'])
+    ->middleware('usercommom');
+
+Route::middleware('checktoken')->group(function () {
+
+    Route::middleware('companyset')->group(function () {
+
+        Route::prefix('usuario')->group(function () {
+
+            Route::post('create', [UsuarioController::class, 'storeUser']);
+
+            Route::get('list', [UsuarioController::class, 'listUser']);
+    
+        });
+
+    });
+
+    Route::middleware('useradmin')->group(function () {
+
+        Route::prefix('usuario')->group(function () {
+
+            Route::post('create-admin', [UsuarioController::class, 'storeUserAdmin']);
+
+        });
+
+    });
+
+});
+
 
 Route::middleware(['checktoken'])->group(function () {
 
-    Route::prefix('atestado')->group(function() {
+    Route::prefix('atestado')->group(function () {
 
         Route::post('create', [AtestadoController::class, 'create']);
 
@@ -31,34 +63,15 @@ Route::middleware(['checktoken'])->group(function () {
 
     });
 
-    Route::prefix('usuario')->group(function () {
-
-        Route::middleware(['useradmin'])->group(function () {
-
-            Route::post('create', [UsuarioController::class, 'storeUser']);
-
-            Route::post('createAdmin', [UsuarioController::class, 'storeUserAdmin']);
-
-        });
-
-        Route::get('list', [UsuarioController::class, 'listUser']);
-
-    });
-
     Route::prefix('empresa')->group(function () {
 
-        Route::middleware(['useradmin'])->group(function () {
-
-            Route::post('create', [EmpresaController::class, 'createEmpresa']);
-
-        });
-
+        Route::post('create-admin', [EmpresaController::class, 'createEmpresa'])->middleware('useradmin');
 
         Route::post('delete', [EmpresaController::class, 'disableEmpresa']);
 
     });
 
-    Route::prefix('funcionario')->group(function(){
+    Route::prefix('funcionario')->group(function () {
 
         Route::post('create', [FuncionarioController::class, 'createFuncionario']);
 
@@ -67,10 +80,7 @@ Route::middleware(['checktoken'])->group(function () {
         Route::middleware(['usercommom'])->group(function () {
 
             Route::get('list', [FuncionarioController::class, 'listFuncionario']);
-
         });
     });
 
 });
-
-

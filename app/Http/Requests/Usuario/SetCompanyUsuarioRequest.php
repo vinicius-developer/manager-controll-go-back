@@ -4,7 +4,7 @@ namespace App\Http\Requests\Usuario;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ListUsuariosRequest extends FormRequest
+class SetCompanyUsuarioRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,15 +24,16 @@ class ListUsuariosRequest extends FormRequest
     public function rules()
     {
         return [
-            'empresa' => ['required', 'exists:empresas,id_empresa'],
+            'company' => ['required', 'regex:/[0-9]/', 'exists:empresas,id_empresa']
         ];
     }
 
     public function messages()
     {
         return [
-            'empresa.required' => 'É necessario informar a empresa para consulta',
-            'empresa.exists' => 'Empresa não encontrada no banco de dados'
+            'company.required' => 'É necessário informar o campo company',
+            'company.regex' => 'Dado informado não é valido',
+            'company.exists' => 'Empresa não existe'
         ];
     }
 }

@@ -3,13 +3,14 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use App\Models\Usuario;
 use Illuminate\Http\Request;
 use App\Traits\Authenticate;
-use App\Traits\ResponsaMessage;
+use App\Traits\ResponseMessage;
 
 class UserAdm
 {
-    use Authenticate, ResponsaMessage;
+    use Authenticate, ResponseMessage;
 
     /**
      * Handle an incoming request.
@@ -21,15 +22,15 @@ class UserAdm
     public function handle(Request $request, Closure $next)
     {
 
-        $user = $this->decodeToken($request);
+        $token = $this->decodeToken($request);
 
-        if($user->id_tipo_usuario === 1) {
+        if(Usuario::isAdmin($token->sub)->exists()) {
 
             return $next($request);
 
         }
 
-        $this->formateMessageError('Seu usuário não consegue realizar essa ação', 401);
+        $this->formateMenssageError('Seu usuário não consegue realizar essa ação', 401);
 
     }
 }

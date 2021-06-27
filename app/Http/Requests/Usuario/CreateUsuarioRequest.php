@@ -25,10 +25,8 @@ class CreateUsuarioRequest extends FormRequest
     {
         return [
             'nome' => ['required', 'max:100'],
-            'email' => ['required', 'email:rfc,dns'],
+            'email' => ['required', 'email:rfc,dns', 'unique:usuarios,email'],
             'password' => ['required', 'confirmed'],
-            'empresa' => ['exists:empresas,id_empresa', 'required'],
-            'telefones_usuarios.*' => ['required']
         ];
     }
 
@@ -37,11 +35,11 @@ class CreateUsuarioRequest extends FormRequest
         return [
             'nome.required' => 'É necessário informar o campo nome',
             'nome.max' => 'Este nome é muito longo',
+            'email.required' => 'É necessário informar o e-mail',
             'email.email' => 'E-mail não contem formato valido',
+            'email.unique' => 'E-mail já foi informado anteriormente',
             'password.required' => 'É necessário informar uma senha',
             'password.confirmed' => 'As senha não são iguais',
-            'empresa.exists' => 'Essa empresa não está cadastrada em nosso sistema',
-            'telefones_usuarios.*.required' => 'É necessário informar o telefone',
         ];
     }
 }

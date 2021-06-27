@@ -19,10 +19,9 @@ class Empresa extends Model
         'razao_social',
     ];
 
-    public function checkEmpreIsActive($id){
-
-        return $this::where('id_empresa', $id)->count();
-
+    public static function checkEmpreIsActiveStatic($id)
+    {
+        return self::where('id_empresa', $id);
     }
 
     public function getEmpreWithCnpj($cnpj)

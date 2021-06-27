@@ -2,14 +2,15 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Usuario;
 use Closure;
 use Illuminate\Http\Request;
 use App\Traits\Authenticate;
-use App\Traits\ResponsaMessage;
+use App\Traits\ResponseMessage;
 
 class UserCommom
 {
-    use Authenticate, ResponsaMessage;
+    use Authenticate, ResponseMessage;
     /**
      * Handle an incoming request.
      *
@@ -19,8 +20,11 @@ class UserCommom
      */
     public function handle(Request $request, Closure $next)
     {
+        $token = $this->decodeToken($request);
 
-        $user = $this->decodeToken($request);
+        $user = Usuario::getUserWithIdStatic($token->sub)
+            ->select('id_tipo_usuario')
+            ->first();
 
         if($user->id_tipo_usuario === 2) {
 
@@ -28,6 +32,6 @@ class UserCommom
 
         }
 
-        $this->formateMessageError('Seu usuário não consegue realizar essa ação', 401);
+        $this->formateMenssageError('Seu usuário não consegue realizar essa ação', 401);
     }
 }

@@ -21,9 +21,10 @@ class RelacaoUsuarioEmpresa extends Model
        return $this->where('id_usuario', $id_user)->value('id_empresa');
     }
 
-    public function consultUser($id_company)
+    public function getUsersCompanies($id_company)
     {
-        return $this->where('id_empresa', $id_company)->get('id_usuario');
+        return $this->where('id_empresa', $id_company)
+            ->join('usuarios as u', 'u.id_usuario', '=', 'relacao_usuario_empresas.id_usuario');
     }
 
     public function getReUserEmpre($id_user)
@@ -35,6 +36,12 @@ class RelacaoUsuarioEmpresa extends Model
     {
         return $this->where('id_usuario', $id_user)
             ->where('id_empresa', $id_company);
+    }
+
+    public function getCompanies($id_user) 
+    {
+        return $this->where('id_usuario', $id_user)
+            ->join('empresas AS e', 'e.id_empresa', '=', 'relacao_usuario_empresas.id_empresa');
     }
 
 }

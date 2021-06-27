@@ -12,14 +12,14 @@ use App\Models\RelacaoAtestadoOcorrencia;
 use App\Models\RelacaoUsuarioEmpresa;
 use App\Traits\Authenticate;
 use App\Traits\FormatData;
-use App\Traits\ResponsaMessage;
+use App\Traits\ResponseMessage;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
 class AtestadoController extends Controller
 {
-    use Authenticate, FormatData, ResponsaMessage;
+    use Authenticate, FormatData, ResponseMessage;
 
     private $atestado;
     private $relAtestadoCid;
@@ -117,11 +117,11 @@ class AtestadoController extends Controller
         } catch (Exception $e) {
 
             return $e;
-            return $this->formateMessageError("Não foi possível fazer a inserção de dados", 500);
+            return $this->formateMenssageError("Não foi possível fazer a inserção de dados", 500);
 
         }
 
-        return $this->formateMessageSuccess("Atestado cadastro com sucesso");
+        return $this->formateMenssageSuccess("Atestado cadastro com sucesso");
     }
 
     public function listAtestadoOcorrencias(ListAtestadoOcorrenciasRequest $request)

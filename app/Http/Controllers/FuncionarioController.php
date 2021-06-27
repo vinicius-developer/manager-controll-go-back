@@ -5,18 +5,18 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Funcionarios\CreateFuncionarioRequest;
 use App\Http\Requests\Funcionarios\DeleteFuncionarioRequest;
 use App\Http\Requests\Funcionarios\ListFuncionariosRequest;
-use App\Models\Empresa;
-use App\Models\Funcionario;
 use App\Models\RelacaoUsuarioEmpresa;
-use App\Models\Usuario;
+use App\Traits\ResponseMessage;
 use App\Traits\Authenticate;
+use App\Models\Funcionario;
 use App\Traits\FormatData;
-use App\Traits\ResponsaMessage;
+use App\Models\Empresa;
+use App\Models\Usuario;
 use Exception;
 
 class FuncionarioController extends Controller
 {
-    use Authenticate, FormatData, ResponsaMessage;
+    use Authenticate, FormatData, ResponseMessage;
 
     private $empresa;
     private $usuario;
@@ -47,7 +47,7 @@ class FuncionarioController extends Controller
 
         if ($data['id_empresa'] == 0) {
 
-            return $this->formateMessageError("Informe a empresa do funcionário que deseja cadastrar", 500);
+            return $this->formateMenssageError("Informe a empresa do funcionário que deseja cadastrar", 500);
 
         }
 
@@ -55,7 +55,7 @@ class FuncionarioController extends Controller
 
         if ($empreSituation == 0) {
 
-            return $this->formateMessageError("Não será possivel efetuar o cadastro, empresa inativa", 500);
+            return $this->formateMenssageError("Não será possivel efetuar o cadastro, empresa inativa", 500);
 
         }
 
@@ -65,11 +65,11 @@ class FuncionarioController extends Controller
 
         } catch (Exception $e) {
 
-            return $this->formateMessageError("Não foi possível cadastrar o funcionário", 500);
+            return $this->formateMenssageError("Não foi possível cadastrar o funcionário", 500);
 
         }
 
-        return $this->formateMessageSuccess("Funcionário cadastrado com sucesso");
+        return $this->formateMenssageSuccess("Funcionário cadastrado com sucesso");
 
     }
 
@@ -82,7 +82,7 @@ class FuncionarioController extends Controller
         if (isset($tokenEmpresa)) {
             if ($tokenEmpresa['id_empresa'] != $funcEmpresa['id_empresa']) {
 
-                return $this->formateMessageError("Funcionario não encontrado", 500);
+                return $this->formateMenssageError("Funcionario não encontrado", 500);
 
             }
         }
@@ -99,7 +99,7 @@ class FuncionarioController extends Controller
 
         }
 
-        return $this->formateMessageSuccess("Funcionario deletado com sucesso");
+        return $this->formateMenssageSuccess("Funcionario deletado com sucesso");
 
     }
 

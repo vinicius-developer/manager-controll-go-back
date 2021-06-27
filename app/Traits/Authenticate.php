@@ -39,10 +39,8 @@ trait Authenticate
      * @param string $aud
      * @return string
      */
-    public function generateToken(int $id, string $aud): string
+    public function generateToken(int $id, string $aud, $com = null): string
     {
-        $assign = config('jwtAssing.assing');
-
         $now = time();
 
         $payload = [
@@ -52,9 +50,11 @@ trait Authenticate
             'aud' => $aud,
         ];
 
-        $jwt = FirebaseJWT::encode($payload, $assign);
+        if($com) {
+            $payload['com'] = $com;
+        }
 
-        return $jwt;
+        return FirebaseJWT::encode($payload, config('jwtAssing.assing'));
     }
 
     /**
@@ -65,9 +65,7 @@ trait Authenticate
      */
     public function checkToken(string $token): object
     {
-
-        return FirebaseJWT::decode($token, config('jwtAssing.assing'), array('HS256'));
-
+        return FirebaseJWT::decode($token, config('jwtAssing.assing'), ['HS256']);
     }
 
     /**
@@ -78,12 +76,8 @@ trait Authenticate
      */
     public function decodeToken(object $request): object
     {
-
         $reqToken = $request->bearerToken();
 
-        $decoded = $this->checkToken($reqToken)->sub;
-
-        return Usuario::getUserWithIdStatic($decoded);
-
+        return $this->checkToken($reqToken);
     }
 }

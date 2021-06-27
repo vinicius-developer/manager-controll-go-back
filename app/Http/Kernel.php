@@ -68,6 +68,8 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'checktoken' => \App\Http\Middleware\ValidateToken::class,
         'useradmin' => \App\Http\Middleware\UserAdm::class,
-        'usercommom' => \App\Http\Middleware\UserCommom::class
+        'usercommom' => \App\Http\Middleware\UserCommom::class,
+        'companyset' => \App\Http\Middleware\CompanySet::class
     ];
+
 }
