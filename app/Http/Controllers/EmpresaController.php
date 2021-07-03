@@ -5,18 +5,18 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Empresa\DisableEmpresaRequest;
 use App\Http\Requests\Empresa\CreateEmpresaRequest;
 use App\Models\RelacaoUsuarioEmpresa;
+use Illuminate\Http\JsonResponse;
 use App\Traits\ResponseMessage;
 use App\Traits\Authenticate;
 use App\Models\CnaeEmpresa;
 use App\Traits\ApiCnaeCid;
-use App\Traits\FormatData;
 use App\Models\Empresa;
 use App\Models\Usuario;
 use Exception;
 
 class EmpresaController extends Controller
 {
-    use Authenticate, FormatData, ResponseMessage, ApiCnaeCid;
+    use Authenticate, ResponseMessage, ApiCnaeCid;
 
     private $relacaoUsuarioEmpresa;
     private $cnaeEmpresa;
@@ -32,13 +32,19 @@ class EmpresaController extends Controller
         $this->usuario = new Usuario();
     }
 
-    public function createEmpresa(CreateEmpresaRequest $request)
+    /**
+     * Função para criar empresa
+     * 
+     * @param CreateEmpresaRequest $request
+     * @return JsonResponse
+     */
+    public function create(CreateEmpresaRequest $request): JsonResponse
     {
         $cnaesEmpresa = array_unique($request['cnae']);
 
         try {
 
-            $idEmpresa = $this->empresa->create([
+            $id_empresa = $this->empresa->create([
                 'cnpj' => $request->cnpj,
                 'nome_fantasia' => $request->nome_fantasia,
                 'razao_social' => $request->razao_social,
@@ -52,9 +58,27 @@ class EmpresaController extends Controller
 
         try {
 
-            $this->insertCnae($idEmpresa, $cnaesEmpresa);
+            $ids_cnaes = [];
+
+            foreach ($cnaesEmpresa as $cnae) {
+
+                $checkCnae = $this->findCnae($cnae);
+
+                if ($checkCnae->serverError()) {
+                    return $this->formateMenssageError("O cnae $cnae não foi encontrado", 500);
+                };
+
+                $id = $this->cnaeEmpresa->create([
+                    'id_empresa' => $id_empresa,
+                    'codigo_cnae' => $cnae,
+                ])->id_cnae_empresa;
+
+                array_push($ids_cnaes, $id);
+            }
 
         } catch (Exception $e) {
+
+            $this->rollback($id_empresa);
 
             return $this->formateMenssageError('Erro ao tentar inserir o CNAE da empresa', 500);
 
@@ -62,7 +86,7 @@ class EmpresaController extends Controller
 
         try {
 
-            $idUsuario = $this->usuario->create([
+            $id_usuario = $this->usuario->create([
                 'nome' => $request->nome,
                 'email' => $request->email,
                 'id_tipo_usuario' => 2,
@@ -71,6 +95,8 @@ class EmpresaController extends Controller
 
         } catch(Exception $e) {
 
+            $this->rollback($id_empresa, $ids_cnaes);
+
             return $this->formateMenssageError('Não foi possível inserir o primeiro usuário', 500);
 
         }
@@ -78,11 +104,13 @@ class EmpresaController extends Controller
         try {
 
             $this->relacaoUsuarioEmpresa->create([
-                'id_empresa' => $idEmpresa,
-                'id_usuario' => $idUsuario
+                'id_empresa' => $id_empresa,
+                'id_usuario' => $id_usuario
             ]);
 
         } catch(Exception $e) {
+
+            $this->rollback($id_empresa, $ids_cnaes, $id_usuario);
 
             return $this->formateMenssageError('Não foi possível criar relação entre usuário e empresa', 500);
 
@@ -92,22 +120,19 @@ class EmpresaController extends Controller
 
     }
 
-    public function disableEmpresa(DisableEmpresaRequest $request)
+    /**
+     * Função para delete empresa
+     * 
+     * @param DisableEmpresaRequest $request
+     * @return JsonResponse
+     */
+    public function delete(DisableEmpresaRequest $request): JsonResponse
     {
-
-        $tokenUser = $this->decodeToken($request);
-
-        if ($tokenUser->id_tipo_user == 2) {
-
-            return $this->formateMenssageError('O usuario não tem autorização para desativar uma empresa', 401);
-
-        }
-
-        $data = $this->checkSintaxeWithReference($request->all(), $this->formatInsertEmpre);
-
         try {
 
-            $this->empresa->getEmpreWithCnpj($data['cnpj'])->delete();
+            $this->empresa
+                ->getCompanyWithId($request->code)
+                ->delete();
 
         } catch (Exception $e) {
 
@@ -119,21 +144,59 @@ class EmpresaController extends Controller
 
     }
 
-    public function insertCnae($idEmpresa, $cnaes)
+    /**
+     * Função para listar as empresas
+     * 
+     * @return JsonResponse
+     */
+    public function list(): JsonResponse
     {
-        foreach ($cnaes as $cnae) {
 
-            $checkCnae = $this->findCnae($cnae);
+        try {
 
-            if ($checkCnae->serverError()) {
-                return $this->formateMenssageError("O cnae $cnae não foi encontrado", 500);
-            };
+            return $this->formateMenssageSuccess(
+                $this->empresa
+                ->select(
+                    'id_empresa',
+                    'nome_fantasia')
+                ->paginate(10), 
+                200);
 
-            $this->cnaeEmpresa->create([
-                'id_empresa' => $idEmpresa,
-                'codigo_cnae' => $cnae,
-            ]);
+        } catch(Exception $e) {
 
+            return $this->formateMenssageError("Não foi possível selecionar a lista", 500);
+
+        }
+
+    }
+
+    /**
+     * Função de rollback para deletar as ações já concluidas
+     * 
+     * @param int $id_empresa
+     * @param array $ids_cnaes
+     * @param int $id_usuario
+     * @return void
+     */
+    private function rollback(int $id_empresa = null, array $ids_cnaes = null, int $id_usuario = null): void
+    {
+
+        if($id_empresa)  {
+            $this->empresa
+                ->getCompanyWithId($id_empresa)
+                ->delete();
+        }
+
+        if($ids_cnaes) {
+            $this->cnaeEmpresa
+                ->getWithIds($ids_cnaes)
+                ->delete();
+        }
+
+        if($id_usuario) {
+            $this->usuario
+                ->getUserWithId($id_usuario)
+                ->delete();
         }
     }
 

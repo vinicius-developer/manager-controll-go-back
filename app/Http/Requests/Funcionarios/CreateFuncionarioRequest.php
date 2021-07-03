@@ -25,7 +25,7 @@ class CreateFuncionarioRequest extends FormRequest
     {
         return [
             'nome_funcionario' => ['required', 'max:100'],
-            'empresa' => ['exists:empresas,id_empresa']
+            'cargo' => ['required', "regex:/[a-zA-Z]/"]
         ];
     }
 
@@ -34,7 +34,8 @@ class CreateFuncionarioRequest extends FormRequest
         return [
             'nome_funcionario.required' => 'É necessário informar o campo nome',
             'nome_funcionario.max' => 'Este nome é muito longo',
-            'empresa.exists' => 'Essa empresa não está cadastrada em nosso sistema'
+            'cargo.required' => 'É necessário inserir o cargo do funcionário',
+            'cargo.regex' => 'Dado inserido do cargo não é valido'
         ];
     }
 }

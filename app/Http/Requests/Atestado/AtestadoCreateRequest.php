@@ -26,7 +26,7 @@ class AtestadoCreateRequest extends FormRequest
     {
         return [
             'funcionario' => ['required', 'exists:funcionarios,id_funcionario'],
-            'crm-medico' => ['required', 'max:8'],
+            'crm-medico' => ['required', 'max:15'],
             'codigo-cid.*' => ['required', 'regex:/([0-9A-Z.])/'],
             'data-atestado' => ['required' ,'regex:/(\d{4})-(\d{2})-(\d{2})/'],
             'data-termino' => ['required', 'regex:/(\d{4})-(\d{2})-(\d{2})/']

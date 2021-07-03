@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\RelacaoUsuarioEmpresa;
 use App\Traits\ResponseMessage;
 use App\Traits\Authenticate;
 use Illuminate\Http\Request;
@@ -36,9 +37,9 @@ class CompanySet
 
         try {
 
-            if(Empresa::checkEmpreIsActiveStatic($token->com)->exists()) {
+            if(!Empresa::checkEmpreIsActiveStatic($token->com)->exists()) {
 
-                return $next($request);
+                return $this->formateMenssageError('Você não tem acesso a essa ação', 403);
 
             }
 
@@ -47,6 +48,21 @@ class CompanySet
             return $this->formateMenssageError('Empresa invalida', 403);
 
         }
+
+        try {
+
+            if(RelacaoUsuarioEmpresa::getRelationShipStatic($token->sub, $token->com)) {
+
+                return $next($request);
+
+            }
+
+
+        } catch (Exception $e) {
+
+            return $this->formateMenssageError('Não foi possível concluir ação', 401);
+
+        }            
 
     }
 }

@@ -24,16 +24,16 @@ class DisableEmpresaRequest extends FormRequest
     public function rules()
     {
         return [
-            'cnpj' => ['required', 'max:14', 'exists:empresas,cnpj']
+            'code' => ['required', 'regex:/[0-9]/', 'exists:empresas,id_empresa']
         ];
     }
 
     public function messages()
     {
         return [
-            'cnpj.required' => 'É necessário informar o campo CNPJ',
-            'cnpj.max' => 'CNPJ incorreto',
-            'cnpj.exists' => 'CNPJ não cadastrado no banco de dados'
+            'code.required' => 'É necessário informar a empresa',
+            'code.regex' => 'Dado informado não é valido',
+            'code.exists' => 'Empresa não existe'
         ];
     }
 }

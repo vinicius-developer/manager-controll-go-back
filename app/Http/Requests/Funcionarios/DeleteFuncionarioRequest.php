@@ -24,14 +24,15 @@ class DeleteFuncionarioRequest extends FormRequest
     public function rules()
     {
         return [
-            'funcionario' => 'exists:funcionarios,id_funcionario'
+            'funcionario' => ['exists:funcionarios,id_funcionario', 'required']
         ];
     }
 
     public function messages()
     {
         return [
-            'funcionario.exists' => 'Funcionario não encontrado no banco de dados'
+            'funcionario.exists' => 'Funcionario não encontrado no banco de dados',
+            'funcionario.required' => 'É obrigatório informar o usuário',
         ];
     }
 }

@@ -15,22 +15,24 @@ class Funcionario extends Model
 
     protected $fillable = [
         'nome',
+        'cargo',
         'id_empresa',
         'id_usuario'
     ];
 
-    public function getFuncId($id)
+    public function getFuncId($id_funcionario, $id_empresa)
     {
-        return $this->where('id_funcionario', $id)->get();
+        return $this->where('id_empresa', $id_empresa)
+            ->where('id_funcionario', $id_funcionario);
     }
 
     public function getFuncEmpre($id)
     {
-        return $this->where('id_funcionario', $id)->value('id_empresa');
+        return $this->where('id_funcionario', $id);
     }
 
-    public function getAllEmpreFunc($id_company)
+    public function getAllEmployeeCompanies($id_company)
     {
-        return $this->where('id_empresa', $id_company)->get('id_funcionario');
+        return $this->where('id_empresa', $id_company);
     }
 }

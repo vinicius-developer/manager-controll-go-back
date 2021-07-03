@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Model;
 
 class Empresa extends Model
 {
@@ -24,8 +24,18 @@ class Empresa extends Model
         return self::where('id_empresa', $id);
     }
 
-    public function getEmpreWithCnpj($cnpj)
+    public function getCompanyWithCnpj($cnpj)
     {
-        return $this->where('cnpj', $cnpj)->first();
+        return $this->where('cnpj', $cnpj);
+    }
+
+    /**
+     * Pega um empresa com o id dela 
+     * 
+     * @param int $id
+     */
+    public function getCompanyWithId($id)
+    {
+        return $this->where('id_empresa', $id);
     }
 }

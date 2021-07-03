@@ -16,10 +16,14 @@ class CnaeEmpresa extends Model
         'codigo_cnae'
     ];
 
-    public function getEmpreCnae($id){
-
+    public function getEmpreCnae($id)
+    {
         return $this->where('id_empresa', $id)->get();
+    }
 
+    public function getWithIds(array $ids)
+    {
+        return $this->wherein('id_cnae_empresa', $ids);
     }
 }
 

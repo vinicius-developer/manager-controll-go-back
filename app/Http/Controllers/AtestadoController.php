@@ -38,22 +38,17 @@ class AtestadoController extends Controller
         $this->relUserEmpre = new RelacaoUsuarioEmpresa();
     }
 
-    private $formatInsertAtestado = [
-        'funcionario' => 'id_funcionario',
-        'crm-medico' => 'crm_medico',
-        'codigo-cid' => 'codigo_cid',
-        'data-atestado' => 'data_lancamento',
-        'data-termino' => 'termino_de_descanso',
-    ];
-
     public function create(AtestadoCreateRequest $request)
     {
-        $data = $this->checkSintaxeWithReference($request->all(), $this->formatInsertAtestado);
-        $data['id_usuario'] = $this->decodeToken($request)->id_usuario;
+        $token = $this->decodeToken($request);
 
         try {
 
-            $atestadoEmpre = $this->funcionario->getFuncEmpre($data['id_funcionario']);
+            $funcionario = $this->funcionario
+                ->first();
+
+            dd($funcionario);
+
             $atestadoEmpreCnae = $this->relCnaeEmpre->getEmpreCnae($atestadoEmpre);
             $cnaeList = [];
             $dataCodigoCid = array_unique($data['codigo_cid']);
