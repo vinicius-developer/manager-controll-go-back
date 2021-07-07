@@ -46,11 +46,11 @@ Route::middleware('checktoken')->group(function () {
 
         });
 
-        Route::prefix('atestado')->group(function () {
+        Route::prefix('atestado')->middleware('checkemployee')->group(function () {
 
             Route::post('create', [AtestadoController::class, 'create']);
     
-            Route::get('listAtestadoOcorrencias', [AtestadoController::class, 'listAtestadoOcorrencias']);
+            Route::get('list-atestado-ocurrence', [AtestadoController::class, 'listAtestadoOcurrence']);
     
             Route::get('count-occurrence/{id_empresa}', [AtestadoController::class, 'countOccurrence']);
     

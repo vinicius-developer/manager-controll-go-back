@@ -14,7 +14,10 @@ class AlterAtestadosIdUsuario extends Migration
     public function up()
     {
         Schema::table('atestados', function (Blueprint $table) {
-            $table->foreign('id_usuario')->references('id_usuario')->on('usuarios');
+            $table->foreign('id_usuario')
+                ->references('id_usuario')
+                ->on('usuarios')
+                ->onDelete('cascade');
         });
     }
 

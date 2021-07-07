@@ -69,7 +69,8 @@ class Kernel extends HttpKernel
         'checktoken' => \App\Http\Middleware\ValidateToken::class,
         'useradmin' => \App\Http\Middleware\UserAdm::class,
         'usercommom' => \App\Http\Middleware\UserCommom::class,
-        'companyset' => \App\Http\Middleware\CompanySet::class
+        'companyset' => \App\Http\Middleware\CompanySet::class,
+        'checkemployee' => \App\Http\Middleware\CheckEmployee::class
     ];
 
 }

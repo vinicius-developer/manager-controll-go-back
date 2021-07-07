@@ -11,6 +11,8 @@ class Funcionario extends Model
     use HasFactory;
     use SoftDeletes;
 
+    protected $table = 'funcionarios';
+
     protected $primaryKey = 'id_funcionario';
 
     protected $fillable = [
@@ -26,9 +28,15 @@ class Funcionario extends Model
             ->where('id_funcionario', $id_funcionario);
     }
 
-    public function getFuncEmpre($id)
+    public function getEmployeeWithId($id)
     {
         return $this->where('id_funcionario', $id);
+    }
+
+    public static function checkIfCompanyHasAccessEmployeeStatic($id_company, $id_employee)
+    {
+        return self::where('id_funcionario', $id_employee)
+            ->where('id_empresa', $id_company);
     }
 
     public function getAllEmployeeCompanies($id_company)

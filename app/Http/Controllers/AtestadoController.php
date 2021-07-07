@@ -2,157 +2,88 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Atestado\AtestadoCreateRequest;
-use App\Http\Requests\Atestado\ListAtestadoOcorrenciasRequest;
+
+use Exception;
 use App\Models\Atestado;
+use App\Traits\ApiCnaeCid;
 use App\Models\CnaeEmpresa;
 use App\Models\Funcionario;
-use App\Models\RelacaoAtestadoCid;
-use App\Models\RelacaoAtestadoOcorrencia;
-use App\Models\RelacaoUsuarioEmpresa;
 use App\Traits\Authenticate;
-use App\Traits\FormatData;
-use App\Traits\ResponseMessage;
-use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
+use App\Traits\ResponseMessage;
+use App\Models\RelacaoAtestadoCid;
+use App\Models\RelacaoUsuarioEmpresa;
+use App\Models\RelacaoAtestadoOcorrencia;
+use App\Http\Requests\Atestado\AtestadoCreateRequest;
+use App\Http\Requests\Atestado\ListAtestadoOcorrenciasRequest;
 
 class AtestadoController extends Controller
 {
-    use Authenticate, FormatData, ResponseMessage;
+    use Authenticate, ResponseMessage, ApiCnaeCid;
 
     private $atestado;
-    private $relAtestadoCid;
     private $funcionario;
-    private $relCnaeEmpre;
-    private $relAtestadoOcorrencia;
+    private $cnaeEmpresa;
     private $relUserEmpre;
+    private $relAtestadoCid;
+    private $relAtestadoOcorrencia;
 
     public function __construct()
     {
         $this->atestado = new Atestado();
-        $this->relAtestadoCid = new RelacaoAtestadoCid();
         $this->funcionario = new Funcionario();
-        $this->relCnaeEmpre = new CnaeEmpresa();
-        $this->relAtestadoOcorrencia = new RelacaoAtestadoOcorrencia();
+        $this->cnaeEmpresa = new CnaeEmpresa();
+        $this->relAtestadoCid = new RelacaoAtestadoCid();
         $this->relUserEmpre = new RelacaoUsuarioEmpresa();
+        $this->relacaoAtestadoOcorrencia = new RelacaoAtestadoOcorrencia();
     }
 
     public function create(AtestadoCreateRequest $request)
     {
         $token = $this->decodeToken($request);
 
+        $cids = array_unique($request->codigo_cid);
+
+        $cnaes = $this->cnaeEmpresa
+            ->getCompanyCnaes($token->com)
+            ->get()
+            ->pluck('codigo_cnae')
+            ->toArray();         
+
         try {
 
-            $funcionario = $this->funcionario
-                ->first();
+            $responseApi = $this->existsRelationInGroup($cnaes, $cids);
 
-            dd($funcionario);
+            $ocurrence = isset($responseApi->collect()['message']['total']) ? $responseApi->collect()['message']['total'] : 0;
 
-            $atestadoEmpreCnae = $this->relCnaeEmpre->getEmpreCnae($atestadoEmpre);
-            $cnaeList = [];
-            $dataCodigoCid = array_unique($data['codigo_cid']);
+            $id_atestado = $this->atestado->create([
+                'crm_medico' => $request->crm_medico,
+                'id_funcionario' => $request->funcionario,
+                'data_lancamento' => $request->data_atestado,
+                'termino_de_descanso' => $request->data_termino,
+                'ocorrencia' => $ocurrence,
+                'id_usuario' => $token->sub
+            ])->id_atestado;
 
-            foreach ($atestadoEmpreCnae as $cnae) {
+            if($ocurrence) {
 
-                array_push($cnaeList, $cnae['codigo_cnae']);
-
-            }
-
-            $response = Http::get('http://localhost:8080/relationship/exists-group', [
-
-                "cnaes" => $cnaeList,
-                "cid10" => $dataCodigoCid,
-
-            ]);
-
-            if ($response['message'][0]['total'] != 0) {
-
-                $data['ocorrencia'] = count($response['message'][0]['relationship']);
-                $data['tratado'] = 0;
-
-            } else {
-
-                $data['ocorrencia'] = 0;
-                $data['tratado'] = 1;
+                $this->createRelacaoAtestadoOcorrencia($id_atestado, $responseApi->collect()['message']['relationship']);
 
             }
 
-            $this->atestado->create($data);
+        } catch(Exception $e) {
 
-            $data['id_atestado'] = $this->atestado->getAtestadoId($data);
-
-            if ($response['message'][0]['total'] != 0) {
-
-                foreach ($response['message'][0]['relationship'] as $relationship) {
-
-                    $this->relAtestadoOcorrencia->create([
-
-                        'codigo_cid' => $relationship['codigo_cid'],
-                        'codigo_cnae' => $relationship['codigo_cnae'],
-                        'id_atestado' => $data['id_atestado'],
-
-                    ]);
-
-                };
-
-            }
-
-            foreach ($dataCodigoCid as $cid) {
-
-                $this->relAtestadoCid->create([
-
-                    'codigo_cid' => $cid,
-                    'id_atestado' => $data['id_atestado'],
-
-                ]);
-
-            }
-
-        } catch (Exception $e) {
-
-            return $e;
-            return $this->formateMenssageError("Não foi possível fazer a inserção de dados", 500);
+            return $this->formateMenssageError('Não foi possível concluir a ação', 500);
 
         }
 
-        return $this->formateMenssageSuccess("Atestado cadastro com sucesso");
+        return $this->formateMenssageSuccess('Atestado criado com sucesso', 201);
+
     }
 
-    public function listAtestadoOcorrencias(ListAtestadoOcorrenciasRequest $request)
+    public function listAtestadoOcurrence(ListAtestadoOcorrenciasRequest $request)
     {
-        $tokenUser = $this->decodeToken($request);
-        $tokenEmpre = $this->relUserEmpre->getUserEmpre($tokenUser['id_usuario']);
-
-        if ($tokenUser['id_tipo_usuario'] == 1) {
-
-            $tokenAllEmpreFunc = $this->funcionario->getAllEmpreFunc($request['empresa']);
-
-        } else {
-
-            $tokenAllEmpreFunc = $this->funcionario->getAllEmpreFunc($tokenEmpre);
-
-        }
-
-        $listAtestadoOcorrencia = [];
-
-        foreach ($tokenAllEmpreFunc as $func) {
-
-            $atestadoOcorrencia = $this->atestado->getAtestado($func['id_funcionario']);
-
-            foreach ($atestadoOcorrencia as $atestado) {
-
-                if ($atestado['ocorrencia'] != 0) {
-
-                    array_push($listAtestadoOcorrencia, $atestado);
-
-                }
-                
-            }
-
-        }
-
-        return $listAtestadoOcorrencia;
+        $token = $this->decodeToken($request);
 
     }
 
@@ -163,6 +94,19 @@ class AtestadoController extends Controller
         dd($this->relacaoUsuarioEmpresas
                 ->getRelationShip($user->id_usuario, $id_empresa)
                 ->exists());
+    }
+
+    private function createRelacaoAtestadoOcorrencia(int $id_atestado, array $items)
+    {
+        foreach($items as $item) {
+
+            $this->relacaoAtestadoOcorrencia->create([
+                'id_atestado' => $id_atestado,
+                'codigo_cid' => $item['codigo_cid'],
+                'codigo_cnae' => $item['codigo_cnae']
+            ]);
+
+        }
     }
 
 }

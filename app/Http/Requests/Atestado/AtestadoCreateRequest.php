@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Atestado;
 
-use App\Models\Funcionario;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AtestadoCreateRequest extends FormRequest
@@ -26,10 +25,10 @@ class AtestadoCreateRequest extends FormRequest
     {
         return [
             'funcionario' => ['required', 'exists:funcionarios,id_funcionario'],
-            'crm-medico' => ['required', 'max:15'],
-            'codigo-cid.*' => ['required', 'regex:/([0-9A-Z.])/'],
-            'data-atestado' => ['required' ,'regex:/(\d{4})-(\d{2})-(\d{2})/'],
-            'data-termino' => ['required', 'regex:/(\d{4})-(\d{2})-(\d{2})/']
+            'crm_medico' => ['required', 'max:15'],
+            'codigo_cid.*' => ['required', 'regex:/([0-9A-Z.])/'],
+            'data_atestado' => ['required' ,'regex:/(\d{4})-(\d{2})-(\d{2})/'],
+            'data_termino' => ['required', 'regex:/(\d{4})-(\d{2})-(\d{2})/']
         ];
     }
 
