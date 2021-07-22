@@ -70,7 +70,8 @@ class Kernel extends HttpKernel
         'useradmin' => \App\Http\Middleware\UserAdm::class,
         'usercommom' => \App\Http\Middleware\UserCommom::class,
         'companyset' => \App\Http\Middleware\CompanySet::class,
-        'checkemployee' => \App\Http\Middleware\CheckEmployee::class
+        'checkemployee' => \App\Http\Middleware\CheckEmployee::class,
+        'haspermissionocurrence' => \App\Http\Middleware\HasPermissionOcurrence::class,
     ];
 
 }

@@ -15,7 +15,6 @@ use App\Models\RelacaoAtestadoCid;
 use App\Models\RelacaoUsuarioEmpresa;
 use App\Models\RelacaoAtestadoOcorrencia;
 use App\Http\Requests\Atestado\AtestadoCreateRequest;
-use App\Http\Requests\Atestado\ListAtestadoOcorrenciasRequest;
 
 class AtestadoController extends Controller
 {
@@ -81,19 +80,88 @@ class AtestadoController extends Controller
 
     }
 
-    public function listAtestadoOcurrence(ListAtestadoOcorrenciasRequest $request)
+    public function treatOccurrence($id_occurrence)
     {
-        $token = $this->decodeToken($request);
+        try {
+
+            $this->atestado
+                ->where('id_atestado', $id_occurrence)
+                ->update([
+                    'tratado' => 1
+                ]);
+
+        } catch (Exception $e) {
+
+            return $this->formateMenssageError('Não foi possível realizar a ação', 500);
+
+        }
+
+        return $this->formateMenssageSuccess('Ação concluida com sucesso');
 
     }
 
-    public function countOccurrence(Request $request, $id_empresa)
+    public function getAllCertificateCompany(Request $request, string $year)
     {
-        $user = $this->decodeToken($request);
+        $token = $this->decodeToken($request);
 
-        dd($this->relacaoUsuarioEmpresas
-                ->getRelationShip($user->id_usuario, $id_empresa)
-                ->exists());
+        $certificates = $this->funcionario
+            ->getAllCertificateWithYear($token->com, $year)
+            ->select(
+                'a.id_atestado',
+                'funcionarios.id_funcionario',
+                'funcionarios.nome',
+                'funcionarios.cargo',
+                'a.data_lancamento',
+                'a.termino_de_descanso',
+            )
+            ->paginate(10);
+
+        return $this->formateMenssageSuccess($certificates);
+    }
+
+    public function listOcurrence(Request $request)
+    {
+        $token = $this->decodeToken($request);
+
+        $ocurrences = $this->funcionario
+            ->getUntreatedCertificates($token->com)
+            ->select(
+                'a.id_atestado',
+                'funcionarios.id_funcionario',
+                'funcionarios.nome',
+                'funcionarios.cargo',
+                'a.data_lancamento',
+                'a.termino_de_descanso',
+            )
+            ->paginate(10);
+
+        return $this->formateMenssageSuccess($ocurrences);
+    }
+
+    public function getInfoOcurrence($id_occurrence)
+    {
+        $details = $this->relacaoAtestadoOcorrencia
+            ->getInfoOcurrence($id_occurrence)
+            ->select(
+                'codigo_cid',
+                'codigo_cnae'
+            )
+            ->get();
+
+        return $this->formateMenssageSuccess($details);
+    }
+
+    public function countOccurrence(Request $request)
+    {
+        $token = $this->decodeToken($request);
+
+        $ocurrences = $this->funcionario
+            ->getUntreatedCertificates($token->com)
+            ->count();
+
+        return $this->formateMenssageSuccess([
+            "ocorrencias" => $ocurrences
+        ]);
     }
 
     private function createRelacaoAtestadoOcorrencia(int $id_atestado, array $items)
@@ -108,5 +176,4 @@ class AtestadoController extends Controller
 
         }
     }
-
 }

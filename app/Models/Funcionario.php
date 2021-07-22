@@ -43,4 +43,21 @@ class Funcionario extends Model
     {
         return $this->where('id_empresa', $id_company);
     }
+
+    public function getAllCertificateWithYear($id_company, $year)
+    {
+        return $this->where('funcionarios.id_empresa', $id_company)
+            ->where('a.created_at', 'like', "%$year%")
+            ->whereNull('funcionarios.deleted_at')
+            ->join('atestados AS a', 'a.id_funcionario', '=', 'funcionarios.id_funcionario');
+    }
+
+    public function getUntreatedCertificates($id_company)
+    {
+        return $this->where('id_empresa', $id_company)
+            ->where('ocorrencia', '<>', 0)
+            ->where('tratado', 0)
+            ->whereNull('funcionarios.deleted_at')
+            ->join('atestados AS a', 'a.id_funcionario', '=', 'funcionarios.id_funcionario');
+    }
 }

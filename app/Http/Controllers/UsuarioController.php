@@ -218,9 +218,9 @@ class UsuarioController extends Controller
      * Verifica se o usuário existe
      * 
      * @param AuthenticateUsuarioRequest $request
-     * @return Collection
+     * @return Collection|bool
      */
-    private function verifyUser(AuthenticateUsuarioRequest $request): Collection
+    private function verifyUser(AuthenticateUsuarioRequest $request)
     {
         $data = $this->usuario->getUserWithEmail($request->email);
 

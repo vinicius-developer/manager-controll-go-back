@@ -21,21 +21,14 @@ class Atestado extends Model
         'tratado'
     ];
 
-    public function getAtestadoId($data)
+    public function getCertificate($id_creatificate)
     {
-
-        return $this->where("crm_medico", $data['crm_medico'])
-            ->where('id_funcionario', $data['id_funcionario'])
-            ->where('data_lancamento', $data['data_lancamento'])
-            ->value('id_atestado');
-
+        return $this->where('id_atestado', $id_creatificate);
     }
 
-    public function getAtestado($id_func){
-
-        return $this->where('id_funcionario', $id_func)
-                    ->get();
-
+    public static function getCertificateStatic($id_creatificate)
+    {
+        return self::where('id_atestado', $id_creatificate);
     }
 
 }

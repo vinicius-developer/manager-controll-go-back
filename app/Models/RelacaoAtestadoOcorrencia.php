@@ -17,4 +17,9 @@ class RelacaoAtestadoOcorrencia extends Model
         'id_atestado'
     ];
 
+    public function getInfoOcurrence($id_certificate)
+    {
+        return $this->where('id_atestado', $id_certificate);
+    }
+
 }

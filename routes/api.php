@@ -46,13 +46,21 @@ Route::middleware('checktoken')->group(function () {
 
         });
 
-        Route::prefix('atestado')->middleware('checkemployee')->group(function () {
+        Route::prefix('atestado')->group(function () {
 
-            Route::post('create', [AtestadoController::class, 'create']);
+            Route::post('create', [AtestadoController::class, 'create'])->middleware('checkemployee');
+
+            Route::get('get-all-certificate/{year}', [AtestadoController::class, 'getAllCertificateCompany']);
     
-            Route::get('list-atestado-ocurrence', [AtestadoController::class, 'listAtestadoOcurrence']);
+            Route::get('list-ocurrence', [AtestadoController::class, 'listOcurrence']);
     
-            Route::get('count-occurrence/{id_empresa}', [AtestadoController::class, 'countOccurrence']);
+            Route::get('count-occurrence', [AtestadoController::class, 'countOccurrence']);
+
+            Route::get('info-occurrence/{id_ocurrence}', [AtestadoController::class, 'getInfoOcurrence'])->middleware('haspermissionocurrence');
+
+            Route::get('get-certificate', [AtestadoController::class, 'getAllCertificateCompany']);
+
+            Route::patch('treat-occurrence/{id_ocurrence}', [AtestadoController::class, 'treatOccurrence'])->middleware('haspermissionocurrence');
     
         });
 
