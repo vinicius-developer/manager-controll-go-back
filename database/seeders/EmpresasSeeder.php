@@ -14,11 +14,10 @@ class EmpresasSeeder extends Seeder
      */
     public function run()
     {
-        // Empresa::create([
-        //     'cnpj' => '50542074000128',
-        //     'nome_fantasia' => 'ForTest Corp',
-        //     'razao_social' => 'You Test Ltda',
-        // ]);
-
+        Empresa::create([
+            'cnpj' => '50542074000128',
+            'nome_fantasia' => 'ForTest Corp',
+            'razao_social' => 'You Test Ltda',
+        ]);
     }
 }
