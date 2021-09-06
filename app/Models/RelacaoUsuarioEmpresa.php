@@ -32,13 +32,13 @@ class RelacaoUsuarioEmpresa extends Model
         return $this->where('id_usuario', $id_user)->get();
     }
 
-    public function getRelationShip($id_user, $id_company)
+    public function getRelationship($id_user, $id_company)
     {
         return $this->where('id_usuario', $id_user)
             ->where('id_empresa', $id_company);
     }
 
-    public static function getRelationShipStatic($id_user, $id_company)
+    public static function getRelationshipStatic($id_user, $id_company)
     {
         return self::where('id_usuario', $id_user)
             ->where('id_empresa', $id_company);
