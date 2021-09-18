@@ -1,5 +1,6 @@
-FROM php:8.0-fpm
+FROM php:7.4-fpm
 
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -9,21 +10,29 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip
 
+# Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
+# Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-WORKDIR /var/www/app
-
-COPY . .
-
-RUN useradd -G www-data,root -u 13215 -d /home/vinicius vinicius
+# Create system user to run Composer and Artisan Commands
+RUN useradd -G www-data,root -u 1000  -d  /home/vinicius vinicius
 RUN mkdir -p /home/vinicius/.composer && \
     chown -R vinicius:vinicius /home/vinicius
 
-EXPOSE 80
+# Set working directory
+WORKDIR /var/www
 
-CMD php -t public/ -S 127.0.0.1:3000
+COPY . .
 
+RUN composer install
+
+RUN cp .env.example .env
+
+RUN php artisan key:generate
+
+EXPOSE 8000
