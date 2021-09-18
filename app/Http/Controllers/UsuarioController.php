@@ -166,7 +166,23 @@ class UsuarioController extends Controller
     {
         $token = $this->decodeToken($request);
 
-        $message = $this->configureResponseToken($token->sub, $request->url(), $request->company);
+        $existsRelacaoEmpresa = $this->usuario_empresa
+            ->getRelationship($token->sub, 
+                $request->company
+            )
+            ->exists();
+
+        if(!$existsRelacaoEmpresa) {
+            return $this->formateMenssageError(
+                "Dado enviado não faz sentido",
+                403
+            );
+        }
+
+        $message = $this->configureResponseToken($token->sub, 
+                $request->url(), 
+                $request->company
+            );
 
         return response()->json($message);
     }

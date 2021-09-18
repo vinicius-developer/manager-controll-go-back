@@ -51,7 +51,7 @@ class CompanySet
 
         try {
 
-            if(RelacaoUsuarioEmpresa::getRelationShipStatic($token->sub, $token->com)) {
+            if(RelacaoUsuarioEmpresa::getRelationshipStatic($token->sub, $token->com)) {
 
                 return $next($request);
 
