@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Empresa\DisableEmpresaRequest;
 use App\Http\Requests\Empresa\CreateEmpresaRequest;
 use App\Models\RelacaoUsuarioEmpresa;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 use App\Traits\ResponseMessage;
 use App\Traits\Authenticate;
@@ -42,6 +43,8 @@ class EmpresaController extends Controller
     {
         $cnaesEmpresa = array_unique($request['cnae']);
 
+        DB::beginTransaction();
+
         try {
 
             $id_empresa = $this->empresa->create([
@@ -50,13 +53,6 @@ class EmpresaController extends Controller
                 'razao_social' => $request->razao_social,
             ])->id_empresa;
 
-        } catch (Exception $e) {
-
-            return $this->formateMenssageError("CNPJ já está em uso, não pode ser repetido", 500);
-
-        }
-
-        try {
 
             $ids_cnaes = [];
 
@@ -73,18 +69,9 @@ class EmpresaController extends Controller
                     'codigo_cnae' => $cnae,
                 ])->id_cnae_empresa;
 
-                array_push($ids_cnaes, $id);
+                $ids_cnaes[] = $id;
+
             }
-
-        } catch (Exception $e) {
-
-            $this->rollback($id_empresa);
-
-            return $this->formateMenssageError('Erro ao tentar inserir o CNAE da empresa', 500);
-
-        }
-
-        try {
 
             $id_usuario = $this->usuario->create([
                 'nome' => $request->nome,
@@ -93,28 +80,23 @@ class EmpresaController extends Controller
                 'password' => $this->generatePassword($request->password)
             ])->id_usuario;
 
-        } catch(Exception $e) {
-
-            $this->rollback($id_empresa, $ids_cnaes);
-
-            return $this->formateMenssageError('Não foi possível inserir o primeiro usuário', 500);
-
-        }
-
-        try {
-
             $this->relacaoUsuarioEmpresa->create([
                 'id_empresa' => $id_empresa,
                 'id_usuario' => $id_usuario
             ]);
 
-        } catch(Exception $e) {
 
-            $this->rollback($id_empresa, $ids_cnaes, $id_usuario);
+        } catch (Exception $e) {
 
-            return $this->formateMenssageError('Não foi possível criar relação entre usuário e empresa', 500);
+            DB::rollBack();
+
+            dd($e->getMessage());
+
+            return $this->formateMenssageError("Não foi possível concluir o cadastramento", 500);
 
         }
+
+        DB::commit();
 
         return $this->formateMenssageSuccess("Empresa cadastrada com sucesso", 201);
 

@@ -121,7 +121,7 @@ class UsuarioController extends Controller
     }
 
     /**
-     * Autenticação de usuário comundo que é feito
+     * Autenticação de usuário comum que é feito
      * para retorna a lista de empresas que a pessoa 
      * pode logar
      * 
@@ -144,6 +144,7 @@ class UsuarioController extends Controller
 
         $message = $this->configureResponseToken($data['id_usuario'], $request->url());
 
+        
         $message['message']['list'] =  $this->usuario_empresa
             ->getCompanies($data['id_usuario'])
             ->select(

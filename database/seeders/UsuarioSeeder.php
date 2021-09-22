@@ -17,12 +17,20 @@ class UsuarioSeeder extends Seeder
      */
     public function run()
     {
+        // adm
         Usuario::create([
             'nome' => 'Admin',
             'id_tipo_usuario' => 1,
             'email' => 'Admin@admin.com',
             'password' => $this->generatePassword('Aa@123456')
         ]);
-        
+
+        // usuário teste 
+        Usuario::create([
+            'nome' => 'vinicius',
+            'id_tipo_usuario' => 2,
+            'email' => 'viniciusilvav1@hotmail.com',
+            'password' => $this->generatePassword('Aa@123456')
+        ]);
     }
 }
