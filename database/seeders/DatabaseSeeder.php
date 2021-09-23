@@ -2,6 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Funcionario;
+use Carbon\Factory;
+use Database\Factories\EmployeeFactory;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -13,9 +16,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        $this->call(TipoUsuarioSeeder::class);
-        $this->call(UsuarioSeeder::class);
-        $this->call(EmpresasSeeder::class);
-        $this->calL(RalacaoUsuarioEmpresaSeeder::class);
+
+        $this->call([
+            TipoUsuarioSeeder::class,
+            UsuarioSeeder::class,
+            EmpresasSeeder::class,
+            RalacaoUsuarioEmpresaSeeder::class,
+        ]);
+
+
+        Funcionario::factory()->count(50)->create();
     }
 }
