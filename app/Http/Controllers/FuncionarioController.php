@@ -9,7 +9,6 @@ use App\Traits\ResponseMessage;
 use Illuminate\Http\Request;
 use App\Traits\Authenticate;
 use App\Models\Funcionario;
-use App\Traits\FormatData;
 use App\Models\Empresa;
 use App\Models\Usuario;
 use Exception;
@@ -80,16 +79,38 @@ class FuncionarioController extends Controller
     {
         $token = $this->decodeToken($request);
         
-        $employee = $this->funcionario
+        $employees = $this->funcionario
             ->getAllEmployeeCompanies($token->com)
             ->select(
                 'id_funcionario',
                 'nome',
                 'cargo',
+                'created_at'
             )
-            ->get();
+            ->paginate(10);
 
-        return $this->formateMenssageSuccess(['funcionarios' => $employee]);
 
+        $messages = [];
+
+        foreach($employees as $employee) {
+            $newData = $this->formatDate($employee->created_at);
+
+            $messages['items'][] = [
+                'id_funcionario' => $employee->id_funcionario,
+                'nome' => $employee->nome,
+                'cargo' => $employee->cargo,
+                'created_at' => $newData
+            ];
+        }
+
+
+        return $this->formateMenssageSuccess(['funcionarios' => $messages, 'paginate' => $employees]);
+    }
+
+    public function formatDate($data) 
+    {
+        
+        return date_format($data, 'Y/m/d');
+    
     }
 }
