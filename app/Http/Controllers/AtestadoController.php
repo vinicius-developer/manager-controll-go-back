@@ -49,11 +49,20 @@ class AtestadoController extends Controller
             ->pluck('codigo_cnae')
             ->toArray();         
 
+        $responseCidExists = $this->findCids($request->codigo_cid);
+
+
+        if(!$responseCidExists->collect()['message']['exists']) {
+            return $this->formateMenssageSuccess(
+                $responseCidExists->collect()['message']['cnae']
+            , 400);
+        }
+
         try {
 
             $responseApi = $this->existsRelationInGroup($cnaes, $cids);
 
-            $ocurrence = isset($responseApi->collect()['message']['total']) ? $responseApi->collect()['message']['total'] : 0;
+            $ocurrence =  $this->setHasOcurrence($responseApi);
 
             $id_atestado = $this->atestado->create([
                 'crm_medico' => $request->crm_medico,
@@ -66,13 +75,19 @@ class AtestadoController extends Controller
 
             if($ocurrence) {
 
-                $this->createRelacaoAtestadoOcorrencia($id_atestado, $responseApi->collect()['message']['relationship']);
+                $this->createRelacaoAtestadoOcorrencia(
+                    $id_atestado, 
+                    $responseApi->collect()['message']['relationship']
+                );
 
             }
 
         } catch(Exception $e) {
 
-            return $this->formateMenssageError('Não foi possível concluir a ação', 500);
+
+            return $this->formateMenssageError(
+                'Não foi possível concluir a ação'
+            , 500);
 
         }
 
@@ -175,5 +190,14 @@ class AtestadoController extends Controller
             ]);
 
         }
+    }
+
+    private function setHasOcurrence($responseApi)
+    {
+        if(isset($responseApi->collect()['message']['total'])) {
+            return $responseApi->collect()['message']['total'];
+        }
+
+        return 0;
     }
 }

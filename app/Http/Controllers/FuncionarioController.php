@@ -88,29 +88,8 @@ class FuncionarioController extends Controller
                 'created_at'
             )
             ->paginate(10);
+            
 
-
-        $messages = [];
-
-        foreach($employees as $employee) {
-            $newData = $this->formatDate($employee->created_at);
-
-            $messages['items'][] = [
-                'id_funcionario' => $employee->id_funcionario,
-                'nome' => $employee->nome,
-                'cargo' => $employee->cargo,
-                'created_at' => $newData
-            ];
-        }
-
-
-        return $this->formateMenssageSuccess(['funcionarios' => $messages, 'paginate' => $employees]);
-    }
-
-    public function formatDate($data) 
-    {
-        
-        return date_format($data, 'Y/m/d');
-    
+        return $this->formateMenssageSuccess($employees);
     }
 }
