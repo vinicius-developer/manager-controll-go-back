@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-
 use Exception;
 use App\Models\Atestado;
 use App\Traits\ApiCnaeCid;
@@ -49,10 +48,13 @@ class AtestadoController extends Controller
             ->pluck('codigo_cnae')
             ->toArray();         
 
-        $responseCidExists = $this->findCids($request->codigo_cid);
+        if(count($cids) !== 0) {
+            
+            $responseCidExists = $this->findCids($cids);
+            
+        }
 
-
-        if(!$responseCidExists->collect()['message']['exists']) {
+        if(isset($responseCidExists) && !$responseCidExists->collect()['message']['exists']) {
             return $this->formateMenssageSuccess(
                 $responseCidExists->collect()['message']['cnae']
             , 400);
@@ -73,6 +75,8 @@ class AtestadoController extends Controller
                 'id_usuario' => $token->sub
             ])->id_atestado;
 
+            $this->createRalationShipWithCids($id_atestado, $cids);
+
             if($ocurrence) {
 
                 $this->createRelacaoAtestadoOcorrencia(
@@ -83,7 +87,6 @@ class AtestadoController extends Controller
             }
 
         } catch(Exception $e) {
-
 
             return $this->formateMenssageError(
                 'Não foi possível concluir a ação'
@@ -115,20 +118,33 @@ class AtestadoController extends Controller
 
     }
 
-    public function getAllCertificateCompany(Request $request, string $year)
+    public function getAllCertificateCompany(
+        Request $request, 
+        string $year, 
+        string $employee
+    )
     {
         $token = $this->decodeToken($request);
 
         $certificates = $this->funcionario
-            ->getAllCertificateWithYear($token->com, $year)
+            ->getAllCertificateYearAndEmployee($token->com, $year, $employee)
+            ->join(
+                'relacao_atestado_cids as rac',
+                'rac.id_atestado',
+                '=',
+                'a.id_atestado')
             ->select(
                 'a.id_atestado',
                 'funcionarios.id_funcionario',
                 'funcionarios.nome',
-                'funcionarios.cargo',
+                'a.tratado',
+                'a.crm_medico',
                 'a.data_lancamento',
                 'a.termino_de_descanso',
             )
+            ->selectRaw('group_concat(rac.codigo_cid) as cids')
+            ->groupBy('rac.id_atestado')
+            ->orderBy('a.tratado', 'ASC')
             ->paginate(10);
 
         return $this->formateMenssageSuccess($certificates);
@@ -199,5 +215,15 @@ class AtestadoController extends Controller
         }
 
         return 0;
+    }
+
+    private function createRalationShipWithCids(int $id_atestado, array $cids): void
+    {
+        foreach($cids as $cid) {
+            $this->relAtestadoCid->create([
+                'id_atestado' => $id_atestado,
+                'codigo_cid' => $cid
+            ]);
+        }
     }
 }

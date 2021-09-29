@@ -49,7 +49,24 @@ class Funcionario extends Model
         return $this->where('funcionarios.id_empresa', $id_company)
             ->where('a.created_at', 'like', "%$year%")
             ->whereNull('funcionarios.deleted_at')
-            ->join('atestados AS a', 'a.id_funcionario', '=', 'funcionarios.id_funcionario');
+            ->join('atestados AS a', 
+                'a.id_funcionario', 
+                '=', 
+                'funcionarios.id_funcionario'
+            );
+    }
+
+    public function getAllCertificateYearAndEmployee($id_company, $year, $id_employee)
+    {
+        return $this->where('funcionarios.id_empresa', $id_company)
+            ->where('a.created_at', 'like', "%$year%")
+            ->where('a.id_funcionario', $id_employee)
+            ->whereNull('funcionarios.deleted_at')
+            ->join('atestados AS a', 
+                'a.id_funcionario', 
+                '=', 
+                'funcionarios.id_funcionario'
+            );
     }
 
     public function getUntreatedCertificates($id_company)
@@ -58,6 +75,10 @@ class Funcionario extends Model
             ->where('ocorrencia', '<>', 0)
             ->where('tratado', 0)
             ->whereNull('funcionarios.deleted_at')
-            ->join('atestados AS a', 'a.id_funcionario', '=', 'funcionarios.id_funcionario');
+            ->join('atestados AS a', 
+                'a.id_funcionario', 
+                '=', 
+                'funcionarios.id_funcionario'
+            );
     }
 }

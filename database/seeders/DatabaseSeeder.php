@@ -3,8 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Funcionario;
-use Carbon\Factory;
-use Database\Factories\EmployeeFactory;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -21,6 +19,7 @@ class DatabaseSeeder extends Seeder
             TipoUsuarioSeeder::class,
             UsuarioSeeder::class,
             EmpresasSeeder::class,
+            CnaeEmpresasSeeder::class,
             RalacaoUsuarioEmpresaSeeder::class,
         ]);
 

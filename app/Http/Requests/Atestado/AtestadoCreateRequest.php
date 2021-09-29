@@ -37,14 +37,14 @@ class AtestadoCreateRequest extends FormRequest
         return [
             'funcionario.required' => 'É necessario informar o funcionario',
             'funcionario.exists' => 'Funcionario não encontrado na  banco de dados',
-            'crm-medico.required' => 'É necessario informar o CRM do atestado',
-            'crm-medico.max' => 'CRM não contem formato valido',
+            'crm_medico.required' => 'É necessario informar o CRM do atestado',
+            'crm_medico.max' => 'CRM não contem formato valido',
             'codigo-cid.*.required' => 'É necessario informar o codigo-cid',
             'codigo-cid.*.regex' => 'Codigo-cid não contem formato valido',
-            'data-atestado.required' => 'É necessario informar a data de emissão do atestado',
-            'data-atestado.regex' => 'Data do Atestado não contem formato valido',
-            'data-termino.required' => 'É necessario informar a data de retorno ao trabalho',
-            'data-termino.regex' => 'Data do Retorno não tem formato valido'
+            'data_atestado.required' => 'É necessario informar a data de emissão do atestado',
+            'data_atestado.regex' => 'Data do Atestado não contem formato valido',
+            'data_termino.required' => 'É necessario informar a data de retorno ao trabalho',
+            'data_termino.regex' => 'Data do Retorno não tem formato valido'
         ];
     }
 }

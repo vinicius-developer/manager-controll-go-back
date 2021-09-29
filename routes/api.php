@@ -44,23 +44,27 @@ Route::middleware('checktoken')->group(function () {
 
             Route::get('list', [FuncionarioController::class, 'list']);
 
+            Route::get('list-with-ocurrence', [FuncionarioController::class, 'listWithOcurrence']);
+
         });
 
         Route::prefix('atestado')->group(function () {
 
             Route::post('create', [AtestadoController::class, 'create'])->middleware('checkemployee');
 
-            Route::get('get-all-certificate/{year}', [AtestadoController::class, 'getAllCertificateCompany']);
+            Route::get('get-all-certificate/{year}/{employee}', [AtestadoController::class, 'getAllCertificateCompany']);
     
             Route::get('list-ocurrence', [AtestadoController::class, 'listOcurrence']);
     
             Route::get('count-occurrence', [AtestadoController::class, 'countOccurrence']);
 
-            Route::get('info-occurrence/{id_ocurrence}', [AtestadoController::class, 'getInfoOcurrence'])->middleware('haspermissionocurrence');
+            Route::get('info-occurrence/{id_ocurrence}', [AtestadoController::class, 'getInfoOcurrence'])
+                ->middleware('haspermissionocurrence');
 
             Route::get('get-certificate', [AtestadoController::class, 'getAllCertificateCompany']);
 
-            Route::patch('treat-occurrence/{id_ocurrence}', [AtestadoController::class, 'treatOccurrence'])->middleware('haspermissionocurrence');
+            Route::patch('treat-occurrence/{id_ocurrence}', [AtestadoController::class, 'treatOccurrence'])
+                ->middleware('haspermissionocurrence');
     
         });
 

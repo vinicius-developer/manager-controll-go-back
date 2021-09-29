@@ -31,7 +31,6 @@ class FuncionarioController extends Controller
 
     }
 
-
     public function create(CreateFuncionarioRequest $request)
     {
         $token = $this->decodeToken($request);
@@ -89,6 +88,30 @@ class FuncionarioController extends Controller
             )
             ->paginate(10);
             
+
+        return $this->formateMenssageSuccess($employees);
+    }
+
+    public function listWithOcurrence(Request $request)
+    {
+        $token = $this->decodeToken($request);
+        
+        $employees = $this->funcionario
+            ->getAllEmployeeCompanies($token->com)
+            ->join('atestados as a',
+                'a.id_funcionario',
+                '=',
+                'funcionarios.id_funcionario'
+            )
+            ->select(
+                'funcionarios.id_funcionario',
+                'nome',
+                'cargo',
+                'funcionarios.created_at'
+            )
+            ->where('a.ocorrencia', '>', 0)
+            ->where('a.tratado', 0)
+            ->paginate(10);
 
         return $this->formateMenssageSuccess($employees);
     }
