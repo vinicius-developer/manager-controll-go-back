@@ -111,6 +111,7 @@ class FuncionarioController extends Controller
             )
             ->where('a.ocorrencia', '>', 0)
             ->where('a.tratado', 0)
+            ->groupBy('funcionarios.id_funcionario')
             ->paginate(10);
 
         return $this->formateMenssageSuccess($employees);
