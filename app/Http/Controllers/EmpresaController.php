@@ -8,6 +8,7 @@ use App\Models\RelacaoUsuarioEmpresa;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 use App\Traits\ResponseMessage;
+use Illuminate\Http\Request;
 use App\Traits\Authenticate;
 use App\Models\CnaeEmpresa;
 use App\Traits\ApiCnaeCid;
@@ -53,7 +54,6 @@ class EmpresaController extends Controller
                 'razao_social' => $request->razao_social,
             ])->id_empresa;
 
-
             $ids_cnaes = [];
 
             foreach ($cnaesEmpresa as $cnae) {
@@ -62,7 +62,7 @@ class EmpresaController extends Controller
 
                 if ($checkCnae->serverError()) {
                     return $this->formateMenssageError("O cnae $cnae não foi encontrado", 500);
-                };
+                }
 
                 $id = $this->cnaeEmpresa->create([
                     'id_empresa' => $id_empresa,
@@ -90,8 +90,6 @@ class EmpresaController extends Controller
 
             DB::rollBack();
 
-            dd($e->getMessage());
-
             return $this->formateMenssageError("Não foi possível concluir o cadastramento", 500);
 
         }
@@ -118,7 +116,10 @@ class EmpresaController extends Controller
 
         } catch (Exception $e) {
 
-            return $this->formateMenssageError("Não foi possivel fazer a exclusão do banco de dados", 500);
+            return $this->formateMenssageError(
+                "Não foi possivel fazer a exclusão do banco de dados", 
+                500
+            );
 
         }
 
@@ -138,11 +139,13 @@ class EmpresaController extends Controller
 
             return $this->formateMenssageSuccess(
                 $this->empresa
-                ->select(
-                    'id_empresa',
-                    'nome_fantasia')
-                ->paginate(10), 
-                200);
+                    ->select(
+                        'id_empresa',
+                        'nome_fantasia'
+                    )
+                    ->paginate(10), 
+                200
+            );
 
         } catch(Exception $e) {
 
@@ -152,34 +155,29 @@ class EmpresaController extends Controller
 
     }
 
-    /**
-     * Função de rollback para deletar as ações já concluidas
-     * 
-     * @param int $id_empresa
-     * @param array $ids_cnaes
-     * @param int $id_usuario
-     * @return void
-     */
-    private function rollback(int $id_empresa = null, array $ids_cnaes = null, int $id_usuario = null): void
+    public function get(Request $request)
     {
 
-        if($id_empresa)  {
-            $this->empresa
-                ->getCompanyWithId($id_empresa)
-                ->delete();
+        $token = $this->decodeToken($request);
+
+        try {
+
+            return $this->formateMenssageSuccess(
+                $this->usuario
+                    ->getCompany($token->sub)
+                    ->select(
+                        'ce.codigo_cnae',
+                        'e.nome_fantasia'
+                    )
+                    ->first(),
+                200
+            );
+
+        } catch (Exception $e) {
+
+            return $this->formateMenssageError("Não foi possível recuperar registro", 500);
+
         }
 
-        if($ids_cnaes) {
-            $this->cnaeEmpresa
-                ->getWithIds($ids_cnaes)
-                ->delete();
-        }
-
-        if($id_usuario) {
-            $this->usuario
-                ->getUserWithId($id_usuario)
-                ->delete();
-        }
     }
-
 }

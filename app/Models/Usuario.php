@@ -28,6 +28,27 @@ class Usuario extends Model
         return $this->where('id_usuario', $id);
     }
 
+    public function getCompany($id)
+    {
+        return $this->join(
+                'relacao_usuario_empresas as rue',
+                'usuarios.id_usuario',
+                '=',
+                'rue.id_usuario'
+            )->join(
+                'empresas as e',
+                'e.id_empresa',
+                '=',
+                'rue.id_empresa'
+            )->join(
+                'cnae_empresas as ce',
+                'ce.id_empresa',
+                '=',
+                'e.id_empresa'
+            )
+            ->where('usuarios.id_usuario', $id);
+    }
+
     public static function getUserWithIdStatic($id)
     {
         return self::where('id_usuario', $id);

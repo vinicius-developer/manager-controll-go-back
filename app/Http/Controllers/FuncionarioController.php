@@ -86,6 +86,7 @@ class FuncionarioController extends Controller
                 'cargo',
                 'created_at'
             )
+            ->orderBy('created_at', 'DESC')
             ->paginate(10);
             
 

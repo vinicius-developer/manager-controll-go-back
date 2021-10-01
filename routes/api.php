@@ -68,6 +68,12 @@ Route::middleware('checktoken')->group(function () {
     
         });
 
+        Route::prefix('empresa')->group(function () {
+
+            Route::get('get', [EmpresaController::class, 'get']);
+    
+        });
+
     });
 
     Route::middleware('useradmin')->group(function () {

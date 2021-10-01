@@ -24,7 +24,6 @@ class AtestadoController extends Controller
     private $cnaeEmpresa;
     private $relUserEmpre;
     private $relAtestadoCid;
-    private $relAtestadoOcorrencia;
 
     public function __construct()
     {
@@ -33,7 +32,6 @@ class AtestadoController extends Controller
         $this->cnaeEmpresa = new CnaeEmpresa();
         $this->relAtestadoCid = new RelacaoAtestadoCid();
         $this->relUserEmpre = new RelacaoUsuarioEmpresa();
-        $this->relacaoAtestadoOcorrencia = new RelacaoAtestadoOcorrencia();
     }
 
     public function create(AtestadoCreateRequest $request)

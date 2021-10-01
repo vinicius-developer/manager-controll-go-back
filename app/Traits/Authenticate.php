@@ -4,7 +4,6 @@ namespace App\Traits;
 
 use Illuminate\Support\Facades\Hash;
 use Firebase\JWT\JWT as FirebaseJWT;
-use App\Models\Usuario;
 
 trait Authenticate
 {
