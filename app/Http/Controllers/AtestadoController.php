@@ -14,6 +14,7 @@ use App\Models\RelacaoAtestadoCid;
 use App\Models\RelacaoUsuarioEmpresa;
 use App\Models\RelacaoAtestadoOcorrencia;
 use App\Http\Requests\Atestado\AtestadoCreateRequest;
+use Illuminate\Support\Facades\Log;
 
 class AtestadoController extends Controller
 {
@@ -85,6 +86,10 @@ class AtestadoController extends Controller
             }
 
         } catch(Exception $e) {
+
+            Log::error("Error ao criar o atestado", [
+                'Exception' => $e->getMessage()
+            ]);
 
             return $this->formateMenssageError(
                 'Não foi possível concluir a ação'
