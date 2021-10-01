@@ -9,7 +9,7 @@ class RelacaoUsuarioEmpresa extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'id_relacao_usuario_empresa';
+    protected $primaryKey = 'id_relacao_usuario_empresas';
 
     protected $fillable = [
         'id_empresa',
