@@ -65,6 +65,8 @@ Route::middleware('checktoken')->group(function () {
 
             Route::patch('treat-occurrence/{id_ocurrence}', [AtestadoController::class, 'treatOccurrence'])
                 ->middleware('haspermissionocurrence');
+
+            Route::get('get-report', [AtestadoController::class, 'getReportFile']);
     
         });
 

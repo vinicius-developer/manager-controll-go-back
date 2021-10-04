@@ -46,11 +46,15 @@ class FuncionarioController extends Controller
 
         } catch (Exception $e) {
 
-            return $this->formateMenssageError("Não foi possível cadastrar o funcionário", 500);
+            return $this->formateMenssageError(
+                'Não foi possível cadastrar o funcionário'
+            , 500);
 
         }
 
-        return $this->formateMenssageSuccess("Funcionário cadastrado com sucesso");
+        return $this->formateMenssageSuccess(
+            'Funcionário cadastrado com sucesso'
+        );
 
     }
 
@@ -66,11 +70,15 @@ class FuncionarioController extends Controller
 
         } catch (Exception $e) {
 
-            return $this->formateMenssageError('Não foi possível deletar funcionário', 404);
+            return $this->formateMenssageError(
+                'Não foi possível deletar funcionário'
+            , 404);
 
         }
 
-        return $this->formateMenssageSuccess("Funcionario deletado com sucesso");
+        return $this->formateMenssageSuccess(
+            'Funcionario deletado com sucesso'
+        );
 
     }
 
@@ -116,5 +124,5 @@ class FuncionarioController extends Controller
             ->paginate(10);
 
         return $this->formateMenssageSuccess($employees);
-    }
+    }  
 }

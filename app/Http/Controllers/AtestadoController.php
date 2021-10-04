@@ -11,10 +11,10 @@ use App\Traits\Authenticate;
 use Illuminate\Http\Request;
 use App\Traits\ResponseMessage;
 use App\Models\RelacaoAtestadoCid;
-use App\Models\RelacaoUsuarioEmpresa;
-use App\Models\RelacaoAtestadoOcorrencia;
-use App\Http\Requests\Atestado\AtestadoCreateRequest;
 use Illuminate\Support\Facades\Log;
+use App\Models\RelacaoUsuarioEmpresa;
+use App\Http\Requests\Atestado\AtestadoCreateRequest;
+use App\Http\Requests\Atestado\CreateFileFuncionarioRequest;
 
 class AtestadoController extends Controller
 {
@@ -45,18 +45,18 @@ class AtestadoController extends Controller
             ->getCompanyCnaes($token->com)
             ->get()
             ->pluck('codigo_cnae')
-            ->toArray();         
+            ->toArray();
 
-        if(count($cids) !== 0) {
-            
+        if (count($cids) !== 0) {
+
             $responseCidExists = $this->findCids($cids);
-            
         }
 
-        if(isset($responseCidExists) && !$responseCidExists->collect()['message']['exists']) {
+        if (isset($responseCidExists) && !$responseCidExists->collect()['message']['exists']) {
             return $this->formateMenssageSuccess(
-                $responseCidExists->collect()['message']['cnae']
-            , 400);
+                $responseCidExists->collect()['message']['cnae'],
+                400
+            );
         }
 
         try {
@@ -76,29 +76,26 @@ class AtestadoController extends Controller
 
             $this->createRalationShipWithCids($id_atestado, $cids);
 
-            if($ocurrence) {
+            if ($ocurrence) {
 
                 $this->createRelacaoAtestadoOcorrencia(
-                    $id_atestado, 
+                    $id_atestado,
                     $responseApi->collect()['message']['relationship']
                 );
-
             }
-
-        } catch(Exception $e) {
+        } catch (Exception $e) {
 
             Log::error("Error ao criar o atestado", [
                 'Exception' => $e->getMessage()
             ]);
 
             return $this->formateMenssageError(
-                'Não foi possível concluir a ação'
-            , 500);
-
+                'Não foi possível concluir a ação',
+                500
+            );
         }
 
         return $this->formateMenssageSuccess('Atestado criado com sucesso', 201);
-
     }
 
     public function treatOccurrence($id_occurrence)
@@ -110,23 +107,19 @@ class AtestadoController extends Controller
                 ->update([
                     'tratado' => 1
                 ]);
-
         } catch (Exception $e) {
 
             return $this->formateMenssageError('Não foi possível realizar a ação', 500);
-
         }
 
         return $this->formateMenssageSuccess('Ação concluida com sucesso');
-
     }
 
     public function getAllCertificateCompany(
-        Request $request, 
-        string $year, 
+        Request $request,
+        string $year,
         string $employee
-    )
-    {
+    ) {
         $token = $this->decodeToken($request);
 
         $certificates = $this->funcionario
@@ -135,7 +128,8 @@ class AtestadoController extends Controller
                 'relacao_atestado_cids as rac',
                 'rac.id_atestado',
                 '=',
-                'a.id_atestado')
+                'a.id_atestado'
+            )
             ->select(
                 'a.id_atestado',
                 'funcionarios.id_funcionario',
@@ -145,8 +139,12 @@ class AtestadoController extends Controller
                 'a.data_lancamento',
                 'a.termino_de_descanso',
             )
-            ->selectRaw('group_concat(rac.codigo_cid) as cids')
-            ->groupBy('rac.id_atestado')
+            ->selectRaw("STRING_AGG(rac.codigo_cid, ',') as cids")
+            ->groupBy(
+                'rac.id_atestado', 
+                'a.id_atestado', 
+                'funcionarios.id_funcionario'
+            )
             ->orderBy('a.tratado', 'ASC')
             ->paginate(10);
 
@@ -198,22 +196,64 @@ class AtestadoController extends Controller
         ]);
     }
 
+    public function getReportFile(CreateFileFuncionarioRequest $request)
+    {
+        $token = $this->decodeToken($request);
+
+        $beginDate   = $request->begin_date;
+        $finalDate   = $request->final_date;
+        $idOfCompany = $token->com;
+
+        $data = $this->atestado
+            ->getReportFromDates(
+                $beginDate, 
+                $finalDate, 
+                $idOfCompany
+            )
+            ->selectRaw("
+                atestados.id_atestado,
+                f.nome as nome,
+                atestados.data_lancamento - atestados.termino_de_descanso as dias,
+                STRING_AGG(rac.codigo_cid, ',') as cids
+            ")
+            ->groupBy('atestados.id_atestado', 'f.nome')
+            ->get()
+            ->toArray();
+
+        array_unshift($data, ['numero de identificação', 'nome', 'dias', 'cids']);
+
+        $currentDate = $this->currentDate('Y-m-d');
+
+        $nameFile = "{$idOfCompany}_{$beginDate}_{$finalDate}_{$currentDate}.csv";
+
+        $callback = function() use ($data) {
+            $file = fopen('php://output', 'w');
+
+            foreach($data as $row) {
+                fputcsv($file, $row);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $this->getHeadersCsv($nameFile));
+    }
+
     private function createRelacaoAtestadoOcorrencia(int $id_atestado, array $items)
     {
-        foreach($items as $item) {
+        foreach ($items as $item) {
 
             $this->relacaoAtestadoOcorrencia->create([
                 'id_atestado' => $id_atestado,
                 'codigo_cid' => $item['codigo_cid'],
                 'codigo_cnae' => $item['codigo_cnae']
             ]);
-
         }
     }
 
     private function setHasOcurrence($responseApi)
     {
-        if(isset($responseApi->collect()['message']['total'])) {
+        if (isset($responseApi->collect()['message']['total'])) {
             return $responseApi->collect()['message']['total'];
         }
 
@@ -222,7 +262,7 @@ class AtestadoController extends Controller
 
     private function createRalationShipWithCids(int $id_atestado, array $cids): void
     {
-        foreach($cids as $cid) {
+        foreach ($cids as $cid) {
             $this->relAtestadoCid->create([
                 'id_atestado' => $id_atestado,
                 'codigo_cid' => $cid

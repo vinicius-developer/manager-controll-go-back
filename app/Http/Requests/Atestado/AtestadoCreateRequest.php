@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Atestado;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\ValidateRuleBeginFinal;
 
 class AtestadoCreateRequest extends FormRequest
 {
@@ -23,11 +24,22 @@ class AtestadoCreateRequest extends FormRequest
      */
     public function rules()
     {
+        $body = json_decode($this->getContent());
+
+        $rules = ['required', 'regex:/(\d{4})-(\d{2})-(\d{2})/'];
+
+        if(isset($body->data_atestado) && isset($body->data_termino)) {
+            $rules[] = new ValidateRuleBeginFinal(
+                $body->data_atestado,
+                $body->data_termino
+            );
+        }
+
         return [
             'funcionario' => ['required', 'exists:funcionarios,id_funcionario'],
             'crm_medico' => ['required', 'max:15'],
             'codigo_cid.*' => ['required', 'regex:/([0-9A-Z.])/'],
-            'data_atestado' => ['required' ,'regex:/(\d{4})-(\d{2})-(\d{2})/'],
+            'data_atestado' => $rules,
             'data_termino' => ['required', 'regex:/(\d{4})-(\d{2})-(\d{2})/']
         ];
     }

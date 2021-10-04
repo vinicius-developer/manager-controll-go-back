@@ -9,7 +9,7 @@ class RelacaoAtestadoCid extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'id_relacao_atestado_cid';
+    protected $primaryKey = 'id_relacao_atestado_cids';
 
     protected $fillable = [
         'codigo_cid',
