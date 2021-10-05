@@ -22,13 +22,14 @@ class CheckEmployee
     {
         $token = $this->decodeToken($request);
 
-        $hasAcess = Funcionario::checkIfCompanyHasAccessEmployeeStatic($token->com, $request->funcionario)
-            ->exists();
+        $hasAcess = Funcionario::checkIfCompanyHasAccessEmployeeStatic(
+            $token->com, 
+            (int) $request->funcionario
+        )->exists();
 
         if($hasAcess) {
             return $next($request);
         };
-
         return $this->formateMenssageError('Não foi possível concluir ação', 403);
     }
 }

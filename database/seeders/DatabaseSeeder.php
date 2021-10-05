@@ -23,7 +23,6 @@ class DatabaseSeeder extends Seeder
             RalacaoUsuarioEmpresaSeeder::class,
         ]);
 
-
         Funcionario::factory()->count(50)->create();
     }
 }
