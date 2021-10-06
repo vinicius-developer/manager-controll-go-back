@@ -14,14 +14,10 @@ class CnaeEmpresasSeeder extends Seeder
      */
     public function run()
     {
+        
         CnaeEmpresa::create([
             'id_empresa' => 1,
-            'codigo_cnae' => '1012-1/02',
-        ]);
-
-        CnaeEmpresa::create([
-            'id_empresa' => 1,
-            'codigo_cnae' => '5231-1/01',
+            'codigo_cnae' => '4399-1/99',
         ]);
 
     }

@@ -25,7 +25,8 @@ class CreateFuncionarioRequest extends FormRequest
     {
         return [
             'nome_funcionario' => ['required', 'max:100'],
-            'cargo' => ['required', "regex:/[a-zA-Z]/"]
+            'cargo' => ['required', "regex:/[a-zA-Z]/"],
+            'admissao' => ['required', 'date_format:Y-m-d']
         ];
     }
 
@@ -35,7 +36,9 @@ class CreateFuncionarioRequest extends FormRequest
             'nome_funcionario.required' => 'É necessário informar o campo nome',
             'nome_funcionario.max' => 'Este nome é muito longo',
             'cargo.required' => 'É necessário inserir o cargo do funcionário',
-            'cargo.regex' => 'Dado inserido do cargo não é valido'
+            'cargo.regex' => 'Dado inserido do cargo não é valido',
+            'admissao.required' => 'É necessário inserir a data de admissão',
+            'admissao.date_format' => 'A data de admissão não possui formato válido'
         ];
     }
 }

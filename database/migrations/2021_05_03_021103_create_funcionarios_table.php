@@ -20,6 +20,7 @@ class CreateFuncionariosTable extends Migration
             $table->string('cargo', 80);
             $table->unsignedInteger('id_empresa');
             $table->unsignedInteger('id_usuario');
+            $table->date('admissao');
 
             $table->timestamps();
             $table->softDeletes();

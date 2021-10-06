@@ -19,7 +19,8 @@ class Funcionario extends Model
         'nome',
         'cargo',
         'id_empresa',
-        'id_usuario'
+        'id_usuario',
+        'admissao'
     ];
 
     public function getFuncId($id_funcionario, $id_empresa)

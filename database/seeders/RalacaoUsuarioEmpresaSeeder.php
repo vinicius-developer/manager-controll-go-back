@@ -14,9 +14,11 @@ class RalacaoUsuarioEmpresaSeeder extends Seeder
      */
     public function run()
     {
+
         RelacaoUsuarioEmpresa::create([
             'id_empresa' => 1,
             'id_usuario' => 2
         ]);
+        
     }
 }

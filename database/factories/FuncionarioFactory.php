@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Funcionario;
+use DateTime;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class FuncionarioFactory extends Factory
@@ -33,12 +34,24 @@ class FuncionarioFactory extends Factory
             'Faxineiro (a)',
             'Recepcionista'
         ];
+
+        $unixTime = time();
+        $year = rand(1, 5);
+        $days = rand(1,9);
+        $mounth = rand(1,5);
         
         return [
             'nome' => $this->faker->name(),
             'cargo' => $responsability[rand(0, 9)],
             'id_empresa' => 1,
-            'id_usuario' => 2
+            'id_usuario' => 2,
+            'admissao' => date(
+                'Y-m-d', 
+                strtotime(
+                    "-$year year -$mounth mounth -$days day", 
+                    $unixTime
+                )
+            )
         ];
     }
 }

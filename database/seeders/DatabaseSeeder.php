@@ -25,5 +25,6 @@ class DatabaseSeeder extends Seeder
 
 
         Funcionario::factory()->count(50)->create();
+        
     }
 }
