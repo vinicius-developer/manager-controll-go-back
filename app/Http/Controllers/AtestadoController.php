@@ -11,7 +11,6 @@ use App\Traits\Authenticate;
 use Illuminate\Http\Request;
 use App\Traits\ResponseMessage;
 use App\Models\RelacaoAtestadoCid;
-use Illuminate\Support\Facades\Log;
 use App\Models\RelacaoUsuarioEmpresa;
 use App\Models\RelacaoAtestadoOcorrencia;
 use App\Http\Requests\Atestado\AtestadoCreateRequest;
@@ -50,15 +49,15 @@ class AtestadoController extends Controller
             ->toArray();
 
         if (count($cids) !== 0) {
-
             $responseCidExists = $this->findCids($cids);
         }
 
         if (isset($responseCidExists) && !$responseCidExists->collect()['message']['exists']) {
-            return $this->formateMenssageSuccess(
-                $responseCidExists->collect()['message']['cnae'],
-                400
-            );
+            return response()->json([
+                "message" => "The given data was invalid.",
+                "errors"=> [
+                    "cids" => [$responseCidExists->collect()['message']['cnae']]
+                ]], 422);
         }
 
         try {
@@ -122,31 +121,41 @@ class AtestadoController extends Controller
 
         $certificates = $this->funcionario
             ->getAllCertificateYearAndEmployee($token->com, $year, $employee)
-            ->join(
-                'relacao_atestado_cids as rac',
-                'rac.id_atestado',
-                '=',
-                'a.id_atestado'
-            )
+            ->orderBy('a.tratado', 'ASC')
             ->select(
-                'a.id_atestado',
                 'funcionarios.id_funcionario',
+                'a.id_atestado',
                 'funcionarios.nome',
                 'a.tratado',
                 'a.crm_medico',
                 'a.data_lancamento',
                 'a.termino_de_descanso',
             )
-            ->selectRaw("STRING_AGG(rac.codigo_cid, ',') as cids")
-            ->groupBy(
-                'rac.id_atestado', 
-                'a.id_atestado', 
-                'funcionarios.id_funcionario'
-            )
-            ->orderBy('a.tratado', 'ASC')
-            ->paginate(10);
+            ->get();
 
-        return $this->formateMenssageSuccess($certificates);
+        $data = [];
+        $count = 0;
+
+        foreach($certificates as $certificate) {
+            $data[$count]['id_funcionario'] = $certificate->id_funcionari; 
+            $data[$count]['id_atestado'] = $certificate->id_atestado; 
+            $data[$count]['nome'] = $certificate->nome; 
+            $data[$count]['tratado'] = $certificate->tratado; 
+            $data[$count]['crm_medico'] = $certificate->crm_medico; 
+            $data[$count]['data_lacamento'] = $certificate->data_lancamento; 
+            $data[$count]['termino_de_descanso'] = $certificate->termino_de_descanso; 
+
+            $cids = $this->relAtestadoCid
+                ->getRegister($certificate->id_atestado)
+                ->select('codigo_cid');
+                
+              
+            $data[$count]['cids'] = $cids->get()->pluck('codigo_cid');
+            $count++;
+        }
+
+
+        return $this->formateMenssageSuccess($data);
     }
 
     public function listOcurrence(Request $request)
@@ -208,7 +217,6 @@ class AtestadoController extends Controller
                 $finalDate, 
                 $idOfCompany
             )
-            
             ->get()
             ->toArray();
 

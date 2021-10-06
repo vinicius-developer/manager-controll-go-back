@@ -15,5 +15,9 @@ class RelacaoAtestadoCid extends Model
         'codigo_cid',
         'id_atestado',
     ];
+
+    public function getRegister($id_atestado) {
+        return $this->where('id_atestado', $id_atestado);
+    }
 }
 
