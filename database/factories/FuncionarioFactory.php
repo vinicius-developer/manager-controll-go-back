@@ -22,36 +22,60 @@ class FuncionarioFactory extends Factory
      */
     public function definition()
     {
-        $responsability = [
-            'Assistente Contabil',
-            'Contador (a)',
-            'Auxiliar Admistrativo',
-            'Auxiliar de Serviços Gerais',
-            'Programador (a)',
-            'Zelador (a)',
-            'Pintor (a)',
-            'Eletricista (a)',
-            'Faxineiro (a)',
-            'Recepcionista'
+        $responsabilityAndSector = [ 
+            [
+                'Assistente Contabil',
+                "Administrativo"
+            ],
+            [
+                'Contador (a)',
+                "Administrativo"
+            ],
+            [
+                'Auxiliar Admistrativo',
+                "Administrativo"
+            ],
+            [
+                'Recepcionista',
+                'Administrativo'
+            ],
+            [
+                'Auxiliar de Serviços Gerais',
+                'Conservação e Limpeza'
+            ],
+            [
+                'Programador (a)',
+                'TI'
+            ],
+            [
+                'Zelador (a)',
+                'Serviços Gerais'
+            ],
+            [
+                'Pintor (a)',
+                'Manutenção Geral'
+            ],
+            [
+                'Eletricista (a)',
+                'Manutenção Geral'
+            ],
+            [
+                'Faxineiro (a)',
+                'Conservação e Limpeza'
+            ],
         ];
 
-        $unixTime = time();
-        $year = rand(1, 5);
-        $days = rand(1,9);
-        $mounth = rand(1,5);
-        
+        $responsabilityAndSectorNumber = rand(0, 9);
+
+
         return [
             'nome' => $this->faker->name(),
-            'cargo' => $responsability[rand(0, 9)],
+            'cargo' => $responsabilityAndSector[$responsabilityAndSectorNumber][0],
             'id_empresa' => 1,
             'id_usuario' => 2,
-            'admissao' => date(
-                'Y-m-d', 
-                strtotime(
-                    "-$year year -$mounth mounth -$days day", 
-                    $unixTime
-                )
-            )
+            'admissao' => $this->faker->dateTimeBetween('-5 year', '-1 year'),
+            'data_de_nascimento' => $this->faker->dateTimeBetween('-40 year', '-18 year'),
+            'setor' => $responsabilityAndSector[$responsabilityAndSectorNumber][1],
         ];
     }
 }

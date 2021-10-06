@@ -33,8 +33,8 @@ class Atestado extends Model
 
     public function getReportFromDates($beginDate, $finalDate, $client)
     {
-        return $this->where('atestados.created_at', '>=', $beginDate)
-            ->where('atestados.created_at', '<=', $finalDate)
+        return $this->where('atestados.created_at', '>=', $beginDate . ' 00:00:00')
+            ->where('atestados.created_at', '<=', $finalDate . ' 23:59:59')
             ->join('funcionarios as f',
                 'f.id_funcionario',
                 '=',
@@ -45,8 +45,23 @@ class Atestado extends Model
                 '=',
                 'atestados.id_atestado',
             )
-            ->where('f.id_empresa', '=', $client);
-            
+            ->where('f.id_empresa', '=', $client)
+            ->selectRaw("
+                atestados.id_atestado,
+                f.nome as nome,
+                atestados.termino_de_descanso - atestados.data_lancamento as dias,
+                f.cargo,
+                f.setor,
+                f.data_de_nascimento,
+                STRING_AGG(rac.codigo_cid, ',') as cids
+            ")
+            ->groupBy(
+                'atestados.id_atestado', 
+                'f.nome',
+                'f.cargo',
+                'f.setor',
+                'f.data_de_nascimento'
+            );
     }
 
 

@@ -208,17 +208,19 @@ class AtestadoController extends Controller
                 $finalDate, 
                 $idOfCompany
             )
-            ->selectRaw("
-                atestados.id_atestado,
-                f.nome as nome,
-                atestados.termino_de_descanso - atestados.data_lancamento as dias,
-                STRING_AGG(rac.codigo_cid, ',') as cids
-            ")
-            ->groupBy('atestados.id_atestado', 'f.nome')
+            
             ->get()
             ->toArray();
 
-        array_unshift($data, ['numero de identificação', 'nome', 'dias', 'cids']);
+        array_unshift($data, [
+            'numero de identificação', 
+            'nome', 
+            'dias', 
+            'cids', 
+            'cargo', 
+            'setor', 
+            'data de nascimento'
+        ]);
 
         $currentDate = $this->currentDate('Y-m-d');
 

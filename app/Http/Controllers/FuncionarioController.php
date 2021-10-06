@@ -42,7 +42,9 @@ class FuncionarioController extends Controller
                 'cargo' => $request->cargo,
                 'id_empresa' => $token->com,
                 'id_usuario' => $token->sub,
-                'admissao' => $request->admissao
+                'admissao' => $request->admissao,
+                'data_de_nascimento' => $request->data_de_nascimento,
+                'setor' => $request->setor
             ]); 
 
         } catch (Exception $e) {
@@ -93,7 +95,8 @@ class FuncionarioController extends Controller
                 'id_funcionario',
                 'nome',
                 'cargo',
-                'admissao'
+                'admissao',
+                'setor'
             )
             ->orderBy('created_at', 'DESC')
             ->paginate(10);
@@ -117,7 +120,8 @@ class FuncionarioController extends Controller
                 'funcionarios.id_funcionario',
                 'nome',
                 'cargo',
-                'admissao'
+                'admissao',
+                'setor'
             )
             ->where('a.ocorrencia', '>', 0)
             ->where('a.tratado', 0)

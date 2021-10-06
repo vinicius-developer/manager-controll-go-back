@@ -21,6 +21,8 @@ class CreateFuncionariosTable extends Migration
             $table->unsignedInteger('id_empresa');
             $table->unsignedInteger('id_usuario');
             $table->date('admissao');
+            $table->date('data_de_nascimento');
+            $table->string('setor', 100);
 
             $table->timestamps();
             $table->softDeletes();

@@ -20,7 +20,9 @@ class Funcionario extends Model
         'cargo',
         'id_empresa',
         'id_usuario',
-        'admissao'
+        'admissao',
+        'data_de_nascimento',
+        'setor'
     ];
 
     public function getFuncId($id_funcionario, $id_empresa)
@@ -82,4 +84,6 @@ class Funcionario extends Model
                 'funcionarios.id_funcionario'
             );
     }
+
+
 }

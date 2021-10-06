@@ -26,7 +26,9 @@ class CreateFuncionarioRequest extends FormRequest
         return [
             'nome_funcionario' => ['required', 'max:100'],
             'cargo' => ['required', "regex:/[a-zA-Z]/"],
-            'admissao' => ['required', 'date_format:Y-m-d']
+            'admissao' => ['required', 'date_format:Y-m-d'],
+            'data_de_nascimento' => ['required', 'date_format:Y-m-d'],
+            'setor' => ['required', 'max:100']
         ];
     }
 
@@ -38,7 +40,11 @@ class CreateFuncionarioRequest extends FormRequest
             'cargo.required' => 'É necessário inserir o cargo do funcionário',
             'cargo.regex' => 'Dado inserido do cargo não é valido',
             'admissao.required' => 'É necessário inserir a data de admissão',
-            'admissao.date_format' => 'A data de admissão não possui formato válido'
+            'admissao.date_format' => 'A data de admissão não possui formato válido',
+            'data_de_nascimento.required' => 'É necessário informar a data de nascimento do funcionário',
+            'data_de_nascimento.date_format' => 'A data de nascimento não possui formato válido',
+            'setor.required' => 'É necessário informar o setor do funcionário',
+            'setor.max' => 'Nome do setor é muito longo'
         ];
     }
 }
