@@ -13,6 +13,7 @@ use App\Traits\ResponseMessage;
 use App\Models\RelacaoAtestadoCid;
 use Illuminate\Support\Facades\Log;
 use App\Models\RelacaoUsuarioEmpresa;
+use App\Models\RelacaoAtestadoOcorrencia;
 use App\Http\Requests\Atestado\AtestadoCreateRequest;
 use App\Http\Requests\Atestado\CreateFileFuncionarioRequest;
 
@@ -33,6 +34,7 @@ class AtestadoController extends Controller
         $this->cnaeEmpresa = new CnaeEmpresa();
         $this->relAtestadoCid = new RelacaoAtestadoCid();
         $this->relUserEmpre = new RelacaoUsuarioEmpresa();
+        $this->relacaoAtestadoOcorrencia = new RelacaoAtestadoOcorrencia();
     }
 
     public function create(AtestadoCreateRequest $request)
@@ -77,7 +79,6 @@ class AtestadoController extends Controller
             $this->createRalationShipWithCids($id_atestado, $cids);
 
             if ($ocurrence) {
-
                 $this->createRelacaoAtestadoOcorrencia(
                     $id_atestado,
                     $responseApi->collect()['message']['relationship']
@@ -85,9 +86,6 @@ class AtestadoController extends Controller
             }
         } catch (Exception $e) {
 
-            Log::error("Error ao criar o atestado", [
-                'Exception' => $e->getMessage()
-            ]);
 
             return $this->formateMenssageError(
                 'Não foi possível concluir a ação',
@@ -213,7 +211,7 @@ class AtestadoController extends Controller
             ->selectRaw("
                 atestados.id_atestado,
                 f.nome as nome,
-                atestados.data_lancamento - atestados.termino_de_descanso as dias,
+                atestados.termino_de_descanso - atestados.data_lancamento as dias,
                 STRING_AGG(rac.codigo_cid, ',') as cids
             ")
             ->groupBy('atestados.id_atestado', 'f.nome')
