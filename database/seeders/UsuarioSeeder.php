@@ -29,7 +29,7 @@ class UsuarioSeeder extends Seeder
         Usuario::create([
             'nome' => 'vinicius',
             'id_tipo_usuario' => 2,
-            'email' => 'viniciusilvav1@hotmail.com',
+            'email' => 'projetointegradorsistema@gmail.com',
             'password' => $this->generatePassword('Aa@123456')
         ]);
         
